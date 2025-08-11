@@ -21,4 +21,5 @@ public class MainViewController {
 
         return "index.html";
     }
+    
 }
