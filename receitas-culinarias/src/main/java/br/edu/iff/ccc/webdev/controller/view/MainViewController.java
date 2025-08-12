@@ -6,10 +6,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+
 @Controller
 @RequestMapping(path = "principal")
-public class MainViewController {
 
+public class MainViewController {
     @GetMapping("/{id}")
     public String getRecipePage(@PathVariable("id") String id, Model model) {
         model.addAttribute("id", id);
@@ -21,5 +22,4 @@ public class MainViewController {
 
         return "index.html";
     }
-    
 }
