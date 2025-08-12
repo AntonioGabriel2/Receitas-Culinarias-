@@ -1,11 +1,19 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Em Construção</title>
+    <title>Receita Culinária</title>
 </head>
 <body>
-    <h1>Página em construção</h1>
-    <p>Em breve, receitas aqui!</p>
+    <h1>Detalhes da Receita</h1>
+
+    <p><strong>ID:</strong> <span th:text="${id}">id</span></p>
+    <p><strong>Nome da Receita:</strong> <span th:text="${nomeReceita}">nomeReceita</span></p>
+    <p><strong>Ingredientes:</strong> <span th:text="${ingredientes}">ingredientes</span></p>
+    <p><strong>Modo de Preparo:</strong> <span th:text="${modoPreparo}">modoPreparo</span></p>
+    <p><strong>Tempo de Preparo:</strong> <span th:text="${tempoPreparo}">tempoPreparo</span></p>
+    <p><strong>Categoria:</strong> <span th:text="${categoriaReceita}">categoriaReceita</span></p>
+
 </body>
 </html>
+
