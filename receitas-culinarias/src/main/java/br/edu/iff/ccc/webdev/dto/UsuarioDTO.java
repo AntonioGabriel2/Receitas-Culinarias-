@@ -26,15 +26,7 @@ public class UsuarioDTO {
     @Size(min = 6, max = 50, message = "A senha deve ter entre 6 e 50 caracteres")
     private String senha;
 
-    @Size(min = 6, max = 50, message = "A confirmação deve ter entre 6 e 50 caracteres")
-    private String confirmarSenha;
-
     public UsuarioDTO() {}
-
-    // Helpers
-    public boolean informouSenha() {
-        return senha != null && !senha.isBlank();
-    }
 
     // Getters/Setters
     public Long getId() { return id; }
@@ -51,7 +43,4 @@ public class UsuarioDTO {
 
     public String getSenha() { return senha; }
     public void setSenha(String senha) { this.senha = senha; }
-
-    public String getConfirmarSenha() { return confirmarSenha; }
-    public void setConfirmarSenha(String confirmarSenha) { this.confirmarSenha = confirmarSenha; }
 }

@@ -38,7 +38,7 @@ public class Usuario {
     private String senhaHash; // BCrypt ~60 chars
 
     // Construtor exigido pelo JPA
-    protected Usuario() {}
+    public Usuario() {}
 
     // Construtor de conveniência para criação
     public Usuario(String nome, String cpf, String email, String senhaHash) {
