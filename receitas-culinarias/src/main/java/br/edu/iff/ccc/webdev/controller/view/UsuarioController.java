@@ -72,4 +72,29 @@ public class UsuarioController {
             return "usuario_form";
         }
     }
+
+    // DETALHES
+    @GetMapping("/{id}")
+    public String detalhes(@PathVariable Long id, Model model, RedirectAttributes ra) {
+        Usuario u = service.findById(id).orElse(null);
+        if (u == null) {
+            ra.addFlashAttribute("errorMessage", "Usuário não encontrado.");
+            return "redirect:/usuarios";
+        }
+        model.addAttribute("usuario", u); // pode ser a entity aqui
+        return "usuario_detalhes";        // template abaixo
+    }
+
+// EXCLUIR
+    @PostMapping("/{id}/delete")
+    public String deletar(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            service.excluir(id);
+            ra.addFlashAttribute("successMessage", "Usuário excluído!");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/usuarios";
+    }
+
 }
