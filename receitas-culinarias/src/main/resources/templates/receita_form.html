@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title th:with="isEdit=${#ctx.containsVariable('id')} ? (${id} != null) : (${#ctx.containsVariable('modo')} ? (${modo} == 'edit') : false)"
+        th:text="${isEdit} ? 'Editar Receita' : 'Cadastrar Receita'">
+    Receita
+  </title>
+  <style>
+    body{font-family:sans-serif;max-width:760px;margin:24px auto}
+    label{display:block;margin-top:12px}
+    input, textarea{width:100%;padding:8px;box-sizing:border-box}
+    textarea{min-height:120px}
+    .erro{color:#b00020;font-size:.9rem}
+    .actions{margin-top:16px}
+  </style>
+</head>
+<body th:with="isEdit=${#ctx.containsVariable('id')} ? (${id} != null) : (${#ctx.containsVariable('modo')} ? (${modo} == 'edit') : false)">
+  <h1 th:text="${isEdit} ? 'Editar Receita' : 'Cadastrar Receita'">Receita</h1>
+
+  <!-- Se isEdit=true -> POST /receitas/{id}; senão -> POST /receitas -->
+  <form th:action="${isEdit} ? @{/receitas/{id}(id=${id})} : @{/receitas}"
+        th:object="${receita}" method="post" novalidate>
+
+    <!-- erros globais -->
+    <div class="erro" th:if="${#fields.hasGlobalErrors()}"
+         th:each="e : ${#fields.globalErrors()}" th:text="${e}"></div>
+
+    <label>Nome</label>
+    <input th:field="*{nome}" placeholder="Ex.: Bolo de Cenoura" />
+    <div class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></div>
+
+    <label>Ingredientes</label>
+    <textarea th:field="*{ingredientes}" placeholder="Ex.: 3 ovos, 2 xícaras de farinha, ..."></textarea>
+    <div class="erro" th:if="${#fields.hasErrors('ingredientes')}" th:errors="*{ingredientes}"></div>
+
+    <label>Modo de Preparo</label>
+    <textarea th:field="*{modoPreparo}" placeholder="Passo a passo do preparo..."></textarea>
+    <div class="erro" th:if="${#fields.hasErrors('modoPreparo')}" th:errors="*{modoPreparo}"></div>
+
+    <div class="actions">
+      <button type="submit" th:text="${isEdit} ? 'Salvar alterações' : 'Cadastrar'">Salvar</button>
+      <a th:href="@{/receitas}" style="margin-left:8px">Cancelar</a>
+    </div>
+  </form>
+</body>
+</html>

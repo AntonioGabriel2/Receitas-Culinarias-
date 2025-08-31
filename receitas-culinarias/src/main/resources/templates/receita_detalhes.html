@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalhes da Receita</title>
+  <style>
+    body{font-family:sans-serif;max-width:760px;margin:24px auto}
+    dt{font-weight:bold} dd{margin:0 0 12px}
+    pre{white-space:pre-wrap}
+  </style>
+</head>
+<body>
+  <h1>Detalhes da Receita</h1>
+
+  <dl>
+    <dt>ID</dt><dd th:text="${receita.id}">1</dd>
+    <dt>Nome</dt><dd th:text="${receita.nome}">Nome</dd>
+    <dt>Ingredientes</dt><dd><pre th:text="${receita.ingredientes}">-</pre></dd>
+    <dt>Modo de Preparo</dt><dd><pre th:text="${receita.modoPreparo}">-</pre></dd>
+  </dl>
+
+  <p>
+    <a th:href="@{|/receitas/${receita.id}/edit|}">Editar</a> |
+    <a th:href="@{/receitas}">Voltar</a>
+  </p>
+</body>
+</html>
