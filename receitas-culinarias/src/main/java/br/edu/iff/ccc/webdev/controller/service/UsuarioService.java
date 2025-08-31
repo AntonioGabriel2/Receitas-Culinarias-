@@ -3,18 +3,20 @@ package br.edu.iff.ccc.webdev.controller.service;
 import br.edu.iff.ccc.webdev.dto.UsuarioDTO;
 import br.edu.iff.ccc.webdev.entities.Usuario;
 import br.edu.iff.ccc.webdev.repository.UsuarioRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import br.edu.iff.ccc.webdev.entities.Perfil;
 
 @Service
 public class UsuarioService {
 
     private final UsuarioRepository repo;
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder encoder;
 
-    public UsuarioService(UsuarioRepository repo) {
+    public UsuarioService(UsuarioRepository repo, PasswordEncoder encoder) {
         this.repo = repo;
+        this.encoder = encoder;
     }
 
     /* CREATE */
@@ -79,6 +81,41 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public java.util.Optional<Usuario> findByEmail(String email) {
         return repo.findByEmailIgnoreCase(email.toLowerCase());
+    }
+
+    @Transactional
+    public Usuario tornarCozinheiro(Long id) {
+        Usuario u = repo.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        u.setPerfil(Perfil.COZINHEIRO);
+        return repo.save(u);
+    }
+
+    @Transactional
+    public void solicitarCozinheiro(Long id) {
+        Usuario u = repo.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        if (u.getPerfil() == Perfil.COZINHEIRO) throw new IllegalArgumentException("Você já é cozinheiro.");
+        if (u.isPedidoCozinheiroPendente()) throw new IllegalArgumentException("Pedido já enviado.");
+        u.setPedidoCozinheiroPendente(true);
+        repo.save(u);
+    }
+
+    @Transactional
+    public void aprovarCozinheiro(Long id) {
+        Usuario u = repo.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        u.setPerfil(Perfil.COZINHEIRO);
+        u.setPedidoCozinheiroPendente(false);
+        repo.save(u);
+    }
+
+    @Transactional
+    public void rejeitarCozinheiro(Long id) {
+        Usuario u = repo.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        u.setPedidoCozinheiroPendente(false);
+        repo.save(u);
     }
 }
 

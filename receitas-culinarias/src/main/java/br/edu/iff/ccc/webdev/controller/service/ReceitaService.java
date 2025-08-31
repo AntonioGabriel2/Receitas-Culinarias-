@@ -51,8 +51,8 @@ public class ReceitaService {
 
     /* READ - list (entidade) */
     @Transactional(readOnly = true)
-    public List<Receita> findAll() {
-        return repo.findAll(Sort.by("nome").ascending());
+    public List<Receita> findAllAsc() {
+        return repo.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     /* READ - one (entidade) */
