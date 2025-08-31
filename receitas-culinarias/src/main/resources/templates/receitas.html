@@ -1,18 +1,66 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Receita Culinária</title>
+  <meta charset="UTF-8" />
+  <title>Receitas</title>
+  <style>
+    body{font-family:sans-serif;max-width:980px;margin:24px auto}
+    table{border-collapse:collapse;width:100%}
+    th,td{border:1px solid #ddd;padding:8px;vertical-align:top}
+    th{background:#fafafa;text-align:left}
+    .msg{padding:8px;margin-bottom:12px;border:1px solid}
+    .ok{background:#e8ffe8;border-color:#b6e3b6}
+    .err{background:#ffe8e8;border-color:#e3b6b6}
+    .actions form{display:inline}
+    a, button { cursor:pointer }
+    .muted{color:#666;font-size:.9rem}
+  </style>
 </head>
 <body>
-    <h1>Detalhes da Receita</h1>
+  <h1>Receitas</h1>
 
-    <p><strong>ID:</strong> <span th:text="${id}">id</span></p>
-    <p><strong>Nome da Receita:</strong> <span th:text="${nomeReceita}">nomeReceita</span></p>
-    <p><strong>Ingredientes:</strong> <span th:text="${ingredientes}">ingredientes</span></p>
-    <p><strong>Modo de Preparo:</strong> <span th:text="${modoPreparo}">modoPreparo</span></p>
-    <p><strong>Tempo de Preparo:</strong> <span th:text="${tempoPreparo}">tempoPreparo</span></p>
-    <p><strong>Categoria:</strong> <span th:text="${categoriaReceita}">categoriaReceita</span></p>
+  <!-- mensagens de flash -->
+  <div class="msg ok" th:if="${successMessage}" th:text="${successMessage}"></div>
+  <div class="msg err" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
+  <p><a th:href="@{/receitas/new}">+ Nova receita</a></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:80px">ID</th>
+        <th>Nome</th>
+        <th>Ingredientes</th>
+        <th>Modo de Preparo</th>
+        <th style="width:240px">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="r : ${receitas}">
+        <td th:text="${r.id}">1</td>
+        <td th:text="${r.nome}">Nome</td>
+        <td>
+          <div th:text="${r.ingredientes}">-</div>
+        </td>
+        <td>
+          <div th:text="${r.modoPreparo}">-</div>
+        </td>
+        <td class="actions">
+          <a th:href="@{|/receitas/${r.id}|}">Detalhes</a> |
+          <a th:href="@{|/receitas/${r.id}/edit|}">Editar</a> |
+          <form th:action="@{|/receitas/${r.id}/delete|}" method="post"
+                onsubmit="return confirm('Tem certeza que deseja excluir esta receita?');">
+            <!-- Se usar Spring Security, inclua o CSRF:
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /> -->
+            <button type="submit">Excluir</button>
+          </form>
+        </td>
+      </tr>
+
+      <tr th:if="${#lists.isEmpty(receitas)}">
+        <td colspan="5" class="muted">Nenhuma receita cadastrada.</td>
+      </tr>
+    </tbody>
+  </table>
 </body>
 </html>
