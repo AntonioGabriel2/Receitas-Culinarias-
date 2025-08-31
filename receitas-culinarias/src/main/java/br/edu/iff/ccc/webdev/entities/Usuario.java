@@ -22,6 +22,9 @@ import jakarta.persistence.UniqueConstraint;
 )
 public class Usuario {
 
+    @Column(nullable = false)
+    private boolean pedidoCozinheiroPendente = false;
+
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -72,6 +75,10 @@ public class Usuario {
     public void setEmail(String email) { this.email = email == null ? null : email.toLowerCase(); }
     public void setSenhaHash(String senhaHash) { this.senhaHash = senhaHash; }
     public void setPerfil(Perfil perfil) { this.perfil = perfil; }
+
+    // getters/setters
+    public boolean isPedidoCozinheiroPendente() { return pedidoCozinheiroPendente; }
+    public void setPedidoCozinheiroPendente(boolean v) { this.pedidoCozinheiroPendente = v; }
 
     // equals/hashCode baseados no CPF (chave natural)
     @Override

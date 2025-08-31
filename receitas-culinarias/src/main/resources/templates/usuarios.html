@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Usuários</title>
   <style>
-    body{font-family:sans-serif;max-width:900px;margin:24px auto}
+    body{font-family:sans-serif;max-width:980px;margin:24px auto}
     table{border-collapse:collapse;width:100%}
     th,td{border:1px solid #ddd;padding:8px}
     th{background:#fafafa;text-align:left}
@@ -13,17 +13,29 @@
     .err{background:#ffe8e8;border-color:#e3b6b6}
     .actions form{display:inline}
     a, button { cursor:pointer }
+    .tag{display:inline-block;padding:2px 6px;border:1px solid #ddd;border-radius:6px;font-size:.8rem;background:#fafafa}
   </style>
 </head>
 <body>
   <h1>Usuários</h1>
-  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
+  <!-- topo: login/logout -->
+  <div style="text-align:right; margin-bottom:12px">
+    <span th:if="${#authorization.expression('isAuthenticated()')}">
+      Logado como <strong th:text="${#authentication.name}">user</strong>
+      <form th:action="@{/logout}" method="post" style="display:inline">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit">Sair</button>
+      </form>
+    </span>
+    <a th:if="${#authorization.expression('!isAuthenticated()')}" th:href="@{/login}">Entrar</a>
+  </div>
 
-  <!-- mensagens vindas de flash attributes -->
+  <!-- mensagens -->
   <div class="msg ok" th:if="${successMessage}" th:text="${successMessage}"></div>
   <div class="msg err" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
+  <!-- cadastro aberto para qualquer um (como você planejou) -->
   <p><a th:href="@{/usuarios/new}">+ Novo usuário</a></p>
 
   <table>
@@ -33,40 +45,64 @@
         <th>Nome</th>
         <th style="width:160px">CPF</th>
         <th>E-mail</th>
-        <th style="width:240px">Ações</th>
+        <th style="width:140px">Perfil</th>
+        <th style="width:420px">Ações</th>
       </tr>
     </thead>
     <tbody>
-      <!-- lista de usuários -->
       <tr th:each="u : ${usuarios}">
         <td th:text="${u.id}">1</td>
         <td th:text="${u.nome}">Nome</td>
         <td th:text="${u.cpf}">00000000000</td>
         <td th:text="${u.email}">email@ex.com</td>
-        <td class="actions">
-          <a th:href="@{|/usuarios/${u.id}|}">Detalhes</a> |
-          <a th:href="@{|/usuarios/${u.id}/edit|}">Editar</a> |
-          <form th:action="@{|/usuarios/${u.id}/delete|}" method="post"
-                onsubmit="return confirm('Tem certeza que deseja excluir?');">
-            <!-- Se usar Spring Security, descomente as 2 linhas abaixo -->
-            <!-- <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /> -->
-            <button type="submit">Excluir</button>
-          </form>
-        </td>
         <td>
-          <a th:href="@{|/usuarios/${u.id}/edit|}">Editar</a>
-          <form th:if="${u.perfil != 'COZINHEIRO'}"
-                th:action="@{|/usuarios/${u.id}/cozinheiro|}"
-                method="post" style="display:inline">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <button type="submit">Tornar Cozinheiro</button>
-          </form>
+          <span class="tag" th:text="${u.perfil}">USUARIO</span>
+          <span class="tag" th:if="${u.pedidoCozinheiroPendente}">PEDIDO COZ.</span>
+        </td>
+        <td class="actions">
+          <!-- Detalhes: sempre visível -->
+          <a th:href="@{|/usuarios/${u.id}|}">Detalhes</a>
+
+          <!-- Editar: ADMIN ou o próprio usuário -->
+          <span th:if="${#authorization.expression('hasRole(''ADMIN'')') 
+                        or (#authentication != null and #authentication.name == u.email)}">
+            | <a th:href="@{|/usuarios/${u.id}/edit|}">Editar</a>
+          </span>
+
+          <!-- Excluir: só ADMIN -->
+          <span th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+            | <form th:action="@{|/usuarios/${u.id}/delete|}" method="post" style="display:inline"
+                    onsubmit="return confirm('Tem certeza que deseja excluir?');">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit">Excluir</button>
+              </form>
+          </span>
+
+          <!-- Solicitar virar cozinheiro: apenas o próprio usuário comum e sem pedido pendente -->
+          <span th:if="${#authentication != null 
+                        and #authentication.name == u.email 
+                        and u.perfil == T(br.edu.iff.ccc.webdev.entities.Perfil).USUARIO
+                        and !u.pedidoCozinheiroPendente}">
+            | <form th:action="@{|/usuarios/${u.id}/pedir-cozinheiro|}" method="post" style="display:inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit">Pedir para virar cozinheiro</button>
+              </form>
+          </span>
+
+          <!-- Aprovar pedido: só ADMIN e se houver pedido pendente -->
+          <span th:if="${#authorization.expression('hasRole(''ADMIN'')') 
+                        and u.pedidoCozinheiroPendente}">
+            | <form th:action="@{|/usuarios/${u.id}/cozinheiro|}" method="post" style="display:inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit">Aprovar cozinheiro</button>
+              </form>
+          </span>
         </td>
       </tr>
 
       <!-- estado vazio -->
       <tr th:if="${#lists.isEmpty(usuarios)}">
-        <td colspan="5">Nenhum usuário cadastrado.</td>
+        <td colspan="6">Nenhum usuário cadastrado.</td>
       </tr>
     </tbody>
   </table>

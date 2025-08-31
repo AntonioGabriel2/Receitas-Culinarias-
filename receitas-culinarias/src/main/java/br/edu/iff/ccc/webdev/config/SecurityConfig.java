@@ -35,16 +35,30 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-          .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**")) // dev
-          .headers(h -> h.frameOptions(f -> f.sameOrigin()))            // H2
-          .authorizeHttpRequests(auth -> auth
-              .requestMatchers("/h2-console/**").permitAll()
-              .requestMatchers(HttpMethod.GET, "/receitas/**").permitAll()
-              .requestMatchers("/receitas/**").hasRole("COZINHEIRO") // criar/editar/excluir
-              .anyRequest().permitAll()
-          )
-          .formLogin(Customizer.withDefaults())
-          .logout(Customizer.withDefaults());
+        .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+        .headers(h -> h.frameOptions(f -> f.sameOrigin()))
+        .authorizeHttpRequests(auth -> auth
+            // H2 console
+            .requestMatchers("/h2-console/**").permitAll()
+
+            // 🔒 TELAS DE FORMULÁRIO (mesmo sendo GET) — exigem login com papel
+            .requestMatchers(HttpMethod.GET, "/receitas/new", "/receitas/*/edit")
+                .hasAnyRole("COZINHEIRO","ADMIN")
+
+            // 🔒 Escrita em receitas (seus forms usam POST)
+            .requestMatchers(HttpMethod.POST, "/receitas/**")
+                .hasAnyRole("COZINHEIRO","ADMIN")
+
+            // 🌐 Leitura pública
+            .requestMatchers(HttpMethod.GET, "/receitas", "/receitas/").permitAll()
+            .requestMatchers(HttpMethod.GET, "/receitas/*").permitAll()
+
+            // resto
+            .anyRequest().permitAll()
+        )
+        .formLogin(Customizer.withDefaults())
+        .logout(Customizer.withDefaults());
+
         return http.build();
     }
 }
