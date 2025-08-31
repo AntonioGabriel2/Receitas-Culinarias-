@@ -1,43 +1,85 @@
 package br.edu.iff.ccc.webdev.controller.service;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import br.edu.iff.ccc.webdev.dto.ReceitaDTO;
 import br.edu.iff.ccc.webdev.entities.Receita;
+import br.edu.iff.ccc.webdev.repository.ReceitaRepository;
 
 @Service
 public class ReceitaService {
-    public void saveReceita(Receita Receita){
 
+    private final ReceitaRepository repo;
 
+    public ReceitaService(ReceitaRepository repo) {
+        this.repo = repo;
     }
 
-    public Receita findReceitaById(Long id) {
-        Receita receita = new Receita();
+    /* CREATE */
+    @Transactional
+    public Receita criar(ReceitaDTO dto) {
+        String nome = trimToNull(dto.getNome());
+        if (nome == null) throw new IllegalArgumentException("Nome obrigatório.");
 
-        if(id == null){
-            return null;
+        Receita r = new Receita(
+            nome,
+            trimOrNull(dto.getIngredientes()),
+            trimOrNull(dto.getModoPreparo())
+        );
+        return repo.save(r);
+    }
+
+    /* UPDATE */
+    @Transactional
+    public Receita atualizar(Long id, ReceitaDTO dto) {
+        Receita r = repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Receita não encontrada."));
+
+        String nome = trimToNull(dto.getNome());
+        if (nome == null) throw new IllegalArgumentException("Nome obrigatório.");
+
+        r.setNome(nome);
+        r.setIngredientes(trimOrNull(dto.getIngredientes()));
+        r.setModoPreparo(trimOrNull(dto.getModoPreparo()));
+        return repo.save(r);
+    }
+
+    /* READ - list (entidade) */
+    @Transactional(readOnly = true)
+    public List<Receita> findAll() {
+        return repo.findAll(Sort.by("nome").ascending());
+    }
+
+    /* READ - one (entidade) */
+    @Transactional(readOnly = true)
+    public Optional<Receita> findById(Long id) {
+        return repo.findById(id);
+    }
+
+    /* DELETE */
+    @Transactional
+    public void excluir(Long id) {
+        if (!repo.existsById(id)) {
+            throw new IllegalArgumentException("Receita não encontrada.");
         }
-
-        receita.setIngredientes("Arroz, Sal, agua");
-        receita.setModoPreparo("Deixe a agua ferver e jogue o arroz e o sal :)");
-        receita.setNome("Arroz Cozido");
-        return receita;
-        
+        repo.deleteById(id);
     }
-    
-    public ArrayList<Receita> findAllReceitas() {
-        Receita r1 = new Receita("feijao", "aaaa","ksksksk");
-        Receita r2 = new Receita("feijao", "aaaa","ksksksk");
-        Receita r3 = new Receita("feijao", "aaaa","ksksksk");
 
-        ArrayList<Receita> receitas = new ArrayList<>();
-        receitas.add(r1);
-        receitas.add(r2);
-        receitas.add(r3);
-        return receitas;
-        
+    /* ===== helpers ===== */
+
+
+    private static String trimOrNull(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
     }
-    
+
+    private static String trimToNull(String s) {
+        return trimOrNull(s); // igual ao de cima, só semântica
+    }
 }
