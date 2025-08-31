@@ -20,11 +20,11 @@ public class ReceitaController {
         this.service = service;
     }
 
-    /* LISTAR */
+    // em ReceitaController
     @GetMapping({"", "/"})
     public String listar(Model model) {
-        model.addAttribute("receitas", service.findAll()); // List<Receita> (entity)
-        return "receitas"; // templates/receitas.html
+        model.addAttribute("receitas", service.findAllAsc()); // <= usa método ordenado
+        return "receitas";
     }
 
     /* FORM NOVA */

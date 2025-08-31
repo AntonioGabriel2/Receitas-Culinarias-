@@ -144,4 +144,29 @@ public class UsuarioController {
         }
         return "redirect:/usuarios";
     }
+
+    /* ===== DETALHES (GET /usuarios/{id}) ===== */
+    @GetMapping("/{id}")
+    public String detalhes(@PathVariable Long id, Model model, RedirectAttributes ra) {
+        var opt = service.findById(id);
+        if (opt.isEmpty()) {
+            ra.addFlashAttribute("errorMessage","Usuário não encontrado.");
+            return "redirect:/usuarios";
+        }
+        model.addAttribute("usuario", opt.get());
+        return "usuario_detalhes"; // templates/usuario_detalhes.html
+    }
+
+    // Excluir: POST /usuarios/{id}/delete (apenas ADMIN)
+    @PostMapping("/{id}/delete")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String excluir(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            service.excluir(id); // implemente no seu service se ainda não tiver
+            ra.addFlashAttribute("successMessage", "Usuário excluído!");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/usuarios";
+    }
 }
