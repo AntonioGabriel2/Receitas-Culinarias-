@@ -53,6 +53,15 @@
             <button type="submit">Excluir</button>
           </form>
         </td>
+        <td>
+          <a th:href="@{|/usuarios/${u.id}/edit|}">Editar</a>
+          <form th:if="${u.perfil != 'COZINHEIRO'}"
+                th:action="@{|/usuarios/${u.id}/cozinheiro|}"
+                method="post" style="display:inline">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit">Tornar Cozinheiro</button>
+          </form>
+        </td>
       </tr>
 
       <!-- estado vazio -->

@@ -97,4 +97,17 @@ public class UsuarioController {
         return "redirect:/usuarios";
     }
 
+    
+    @PostMapping("/{id}/cozinheiro")
+    // @PreAuthorize("hasRole('ADMIN')") // opcional: só ADMIN pode promover
+    public String promoverCozinheiro(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            service.tornarCozinheiro(id);
+            ra.addFlashAttribute("successMessage", "Usuário promovido a Cozinheiro!");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/usuarios";
+    }
+
 }
