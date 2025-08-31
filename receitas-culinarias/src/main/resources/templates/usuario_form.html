@@ -6,50 +6,54 @@
         th:text="${isEdit} ? 'Editar Usuário' : 'Cadastrar Usuário'">
     Usuário
   </title>
-  <style>
-    body{font-family:sans-serif;max-width:760px;margin:24px auto}
-    label{display:block;margin-top:12px}
-    input{width:100%;padding:8px;box-sizing:border-box}
-    .erro{color:#b00020;font-size:.9rem}
-    .actions{margin-top:16px}
-  </style>
+  <link rel="stylesheet" th:href="@{/css/_forms.css}">
 </head>
 <body th:with="isEdit=${#ctx.containsVariable('id')} ? (${id} != null) : false">
-  <h1 th:text="${isEdit} ? 'Editar Usuário' : 'Cadastrar Usuário'">Usuário</h1>
+  <main class="card">
+    <h1 th:text="${isEdit} ? 'Editar Usuário' : 'Cadastrar Usuário'">Usuário</h1>
 
-  <!-- 
-    Se isEdit = true  -> POST /usuarios/{id}
-    Se isEdit = false -> POST /usuarios
-  -->
-  <form th:action="${isEdit} ? @{/usuarios/{id}(id=${id})} : @{/usuarios}"
-        th:object="${usuario}" method="post" novalidate>
+    <!-- 
+      Se isEdit = true  -> POST /usuarios/{id}
+      Se isEdit = false -> POST /usuarios
+    -->
+    <form th:action="${isEdit} ? @{/usuarios/{id}(id=${id})} : @{/usuarios}"
+          th:object="${usuario}" method="post" novalidate class="form">
 
-    <!-- erros globais (ex.: br.reject(...)) -->
-    <div class="erro" th:if="${#fields.hasGlobalErrors()}"
-         th:each="e : ${#fields.globalErrors()}" th:text="${e}"></div>
+      <!-- erros globais -->
+      <div class="erro" th:if="${#fields.hasGlobalErrors()}"
+           th:each="e : ${#fields.globalErrors()}" th:text="${e}"></div>
 
-    <label>Nome</label>
-    <input th:field="*{nome}" placeholder="Ex.: Maria Silva" />
-    <div class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></div>
+      <div class="form-group">
+        <label for="nome">Nome</label>
+        <input id="nome" type="text" th:field="*{nome}" placeholder="Ex.: Maria Silva" />
+        <div class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></div>
+      </div>
 
-    <label>CPF</label>
-    <!-- fica readonly na edição -->
-    <input th:field="*{cpf}" th:attr="readonly=${isEdit}"
-           placeholder="Ex.: 123.456.789-09" />
-    <div class="erro" th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}"></div>
+      <div class="form-group">
+        <label for="cpf">CPF</label>
+        <input id="cpf" type="text" th:field="*{cpf}" th:attr="readonly=${isEdit}"
+               placeholder="Ex.: 123.456.789-09" />
+        <div class="erro" th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}"></div>
+      </div>
 
-    <label>E-mail</label>
-    <input th:field="*{email}" placeholder="Ex.: maria@exemplo.com" />
-    <div class="erro" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input id="email" type="email" th:field="*{email}" placeholder="Ex.: maria@exemplo.com" />
+        <div class="erro" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+      </div>
 
-    <label th:text="${isEdit} ? 'Senha (preencha para alterar)' : 'Senha'">Senha</label>
-    <input type="password" th:field="*{senha}" placeholder="mín. 6 caracteres" />
-    <div class="erro" th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}"></div>
+      <div class="form-group">
+        <label for="senha" th:text="${isEdit} ? 'Senha (preencha para alterar)' : 'Senha'">Senha</label>
+        <input type="password" id="senha" th:field="*{senha}" placeholder="mín. 6 caracteres" />
+        <div class="erro" th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}"></div>
+      </div>
 
-    <div class="actions">
-      <button type="submit" th:text="${isEdit} ? 'Salvar alterações' : 'Cadastrar'">Salvar</button>
-      <a th:href="@{/usuarios}" style="margin-left:8px">Cancelar</a>
-    </div>
-  </form>
+      <div class="actions">
+        <button type="submit" class="btn salvar"
+                th:text="${isEdit} ? 'Salvar alterações' : 'Cadastrar'">Salvar</button>
+        <button type="button" class="btn cancelar" onclick="history.back()">Cancelar</button>
+      </div>
+    </form>
+  </main>
 </body>
 </html>

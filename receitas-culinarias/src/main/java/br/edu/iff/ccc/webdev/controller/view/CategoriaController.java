@@ -10,6 +10,6 @@ public class CategoriaController {
     public String listarCategorias(Model model) {
         
         model.addAttribute("categorias","Bebidas");
-        return "listar"; 
+        return "categoria"; 
     }
 }

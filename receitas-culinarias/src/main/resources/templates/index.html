@@ -1,19 +1,56 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Receita Culinária</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receitas Culinárias</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <h1>Detalhes da Receita</h1>
+    <!-- Barra de navegação -->
+    <header class="navbar">
+        <nav class="nav-container">
+            <ul class="nav-links">
+                <li><a href="#">Bebidas</a></li>
+                <li><a href="#">Entradas</a></li>
+                <li><a href="#">Pratos Principais</a></li>
+                <li><a href="#">Sobremesas</a></li>
+            </ul>
 
-    <p><strong>ID:</strong> <span th:text="${id}">id</span></p>
-    <p><strong>Nome da Receita:</strong> <span th:text="${nomeReceita}">nomeReceita</span></p>
-    <p><strong>Ingredientes:</strong> <span th:text="${ingredientes}">ingredientes</span></p>
-    <p><strong>Modo de Preparo:</strong> <span th:text="${modoPreparo}">modoPreparo</span></p>
-    <p><strong>Tempo de Preparo:</strong> <span th:text="${tempoPreparo}">tempoPreparo</span></p>
-    <p><strong>Categoria:</strong> <span th:text="${categoriaReceita}">categoriaReceita</span></p>
+            <div class="search-container">
+                <input type="text" placeholder="Procurar receita">
+                <button class="search-btn">🔍</button>
+            </div>
 
+            <div class="action-btn">
+                <a href="/usuarios/new" class="btn">Cadastrar</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Carrossel -->
+    <section class="carousel">
+        <div class="slides">
+            <div class="slide active">
+                <img src="/images/pratos.jpeg" alt="Receita 1" class="banner-img">
+                <div class="caption">Receita 1</div>
+            </div>
+            <div class="slide">
+                <img src="/images/bebidas.png" alt="Receita 2" class="banner-img">
+                <div class="caption">Receita 2</div>
+            </div>
+            <div class="slide">
+                <img src="/images/entradas.jpg" alt="Receita 3" class="banner-img">
+                <div class="caption">Receita 3</div>
+            </div>
+            <div class="slide">
+                <img src="/images/sobremesas.jpg" alt="Receita 4" class="banner-img">
+                <div class="caption">Receita 4</div>
+            </div>
+        </div>
+        <div class="dots"></div>
+    </section>
+
+    <script src="/js/carousel.js"></script>
 </body>
 </html>
-
