@@ -16,6 +16,8 @@
   </style>
 </head>
 <body th:with="isEdit=${#ctx.containsVariable('id')} ? (${id} != null) : (${#ctx.containsVariable('modo')} ? (${modo} == 'edit') : false)">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
   <h1 th:text="${isEdit} ? 'Editar Receita' : 'Cadastrar Receita'">Receita</h1>
 
   <!-- Se isEdit=true -> POST /receitas/{id}; senão -> POST /receitas -->

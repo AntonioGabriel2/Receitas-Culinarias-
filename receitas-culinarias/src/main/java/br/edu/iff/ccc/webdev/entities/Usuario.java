@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,6 +21,12 @@ import jakarta.persistence.UniqueConstraint;
     }
 )
 public class Usuario {
+
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Perfil perfil = Perfil.USUARIO; // padrão
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,6 +54,7 @@ public class Usuario {
         this.cpf = cpf == null ? null : cpf.replaceAll("\\D", "");      // normaliza CPF
         this.email = email == null ? null : email.toLowerCase();         // normaliza e-mail
         this.senhaHash = senhaHash;
+        this.perfil = Perfil.USUARIO; // default
     }
 
     // Getters (sem setter para CPF!)
@@ -54,12 +63,15 @@ public class Usuario {
     public String getCpf() { return cpf; }
     public String getEmail() { return email; }
     public String getSenhaHash() { return senhaHash; }
+    public Perfil getPerfil() { return perfil; }
+    
 
     // Setters só para campos mutáveis
     public void setId(Long id) { this.id = id; }
     public void setNome(String nome) { this.nome = nome; }
     public void setEmail(String email) { this.email = email == null ? null : email.toLowerCase(); }
     public void setSenhaHash(String senhaHash) { this.senhaHash = senhaHash; }
+    public void setPerfil(Perfil perfil) { this.perfil = perfil; }
 
     // equals/hashCode baseados no CPF (chave natural)
     @Override

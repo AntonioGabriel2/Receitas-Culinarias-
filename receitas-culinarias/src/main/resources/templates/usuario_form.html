@@ -16,6 +16,8 @@
 </head>
 <body th:with="isEdit=${#ctx.containsVariable('id')} ? (${id} != null) : false">
   <h1 th:text="${isEdit} ? 'Editar Usuário' : 'Cadastrar Usuário'">Usuário</h1>
+  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
 
   <!-- 
     Se isEdit = true  -> POST /usuarios/{id}

@@ -17,6 +17,8 @@
 </head>
 <body>
   <h1>Usuários</h1>
+  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
 
   <!-- mensagens vindas de flash attributes -->
   <div class="msg ok" th:if="${successMessage}" th:text="${successMessage}"></div>
