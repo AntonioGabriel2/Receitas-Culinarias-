@@ -1,0 +1,120 @@
+:root {
+  --bg:#fff6ed;       /* fundo bege claro */
+  --fg:#3b3b3b;       /* texto escuro */
+  --muted:#7a7a7a;    /* cinza médio */
+  --card:#ffffff;     /* card branco */
+  --btn:#e94e1b;      /* laranja principal */
+  --btn-hover:#c63c0d;/* laranja escuro */
+  --ring:#f0e2d1;     /* detalhe/bege */
+  --danger:#dc2626;   /* vermelho para erro */
+  --success:#145c2e;  /* verde sucesso */
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Arial', sans-serif;
+}
+
+/* Container do formulário */
+.card {
+  width: min(92vw, 420px);
+  background: var(--card);
+  border: 1px solid var(--ring);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+h1 {
+  margin-bottom: 18px;
+  color: var(--btn);
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: var(--fg);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+input:focus {
+  border-color: var(--btn);
+  box-shadow: 0 0 0 3px rgba(233,78,27,0.25);
+  outline: none;
+}
+
+/* Mensagens */
+.msg {
+  margin-bottom: 16px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.erro {
+  background: #ffe5e5;
+  color: var(--danger);
+}
+
+.ok {
+  background: #e6ffef;
+  color: var(--success);
+}
+
+/* Ações */
+.actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  padding: 0 6px; /* <-- novo para afastar botões das bordas */
+}
+
+.btn {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 48px;
+  border-radius: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform .12s ease, filter .12s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.salvar {
+  background: linear-gradient(180deg, var(--btn), var(--btn-hover));
+  color: white;
+}
+
+.cancelar {
+  background: linear-gradient(180deg, #aaa, #888);
+  color: white;
+}

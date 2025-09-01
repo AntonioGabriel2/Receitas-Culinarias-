@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receitas Culinárias</title>
     <link rel="stylesheet" href="/css/style.css">
+    <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+
 </head>
 <body>
     <!-- Barra de navegação -->
@@ -16,16 +18,17 @@
                 <li><a href="#">Pratos Principais</a></li>
                 <li><a href="#">Sobremesas</a></li>
                 <li><a href="/receitas">Receitas</a></li>
+                <li sec:authorize="hasRole('ADMIN')"><a href="/usuarios">Usuários</a></li>
             </ul>
 
             <div class="search-container">
                 <input type="text" placeholder="Procurar receita">
-                <button class="search-btn"></button>
+                
             </div>
 
             <div class="action-btn">
                 <a href="/usuarios/new" class="btn">Cadastrar</a>
-                <a href="/usuarios/new" class="btn">Login</a>
+                <a href="/login" class="btn">Login</a>
             </div>
         </nav>
     </header>

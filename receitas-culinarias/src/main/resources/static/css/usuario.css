@@ -1,0 +1,162 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Corpo */
+body {
+    background-color: #f8f8f8;
+    color: #333;
+    padding: 20px;
+}
+
+/* Cabeçalho */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+header strong {
+    font-size: 22px;
+    color: #2c3e50;
+}
+
+header nav a,
+header nav span {
+    margin-left: 10px;
+    text-decoration: none;
+    color: #2c3e50;
+    font-weight: bold;
+}
+
+header nav a:hover {
+    color: #1abc9c;
+}
+
+header nav button {
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+header nav button:hover {
+    background-color: #c0392b;
+}
+
+/* Mensagens de alerta */
+.alert {
+    padding: 12px;
+    margin-bottom: 14px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Toolbar navegação */
+nav {
+    margin-bottom: 16px;
+}
+
+nav a {
+    display: inline-block;
+    margin-right: 12px;
+    text-decoration: none;
+    color: #1abc9c;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* Tabela */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+thead {
+    background-color: #1abc9c;
+    color: #fff;
+}
+
+thead th {
+    padding: 14px;
+    text-align: left;
+    font-size: 16px;
+}
+
+tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    font-size: 15px;
+}
+
+tbody tr:hover {
+    background-color: #f4f9f9;
+}
+
+/* Ações */
+.actions a,
+.actions button {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 6px 10px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.actions a {
+    background-color: #3498db;
+    color: #fff;
+}
+
+.actions a:hover {
+    background-color: #2980b9;
+}
+
+.actions button {
+    background-color: #e67e22;
+    color: #fff;
+}
+
+.actions button:hover {
+    background-color: #d35400;
+}
+
+/* Botão excluir */
+.actions form button[type="submit"] {
+    background-color: #e74c3c;
+}
+
+.actions form button[type="submit"]:hover {
+    background-color: #c0392b;
+}

@@ -48,6 +48,7 @@ public class SecurityConfig {
                 // leitura pública de receitas
                 .requestMatchers(HttpMethod.GET, "/receitas", "/receitas/").permitAll()
                 .requestMatchers(HttpMethod.GET, "/receitas/*").permitAll()
+                .requestMatchers("/usuarios/**").hasRole("ADMIN")
 
                 // o resto você decide (aqui está liberado)
                 .anyRequest().permitAll()

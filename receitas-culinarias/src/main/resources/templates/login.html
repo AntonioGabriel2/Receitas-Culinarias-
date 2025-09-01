@@ -3,42 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <title>Entrar</title>
-  <style>
-    body{font-family:sans-serif;max-width:420px;margin:48px auto}
-    form{display:flex;flex-direction:column;gap:12px}
-    label{display:flex;flex-direction:column;gap:6px}
-    input,button{padding:10px;font-size:16px}
-    .msg{margin-bottom:12px;padding:10px;border-radius:6px}
-    .erro{background:#ffe5e5;color:#8a1f1f}
-    .ok{background:#e6ffef;color:#145c2e}
-  </style>
+  <link rel="stylesheet" href="/css/login.css">
 </head>
 <body>
-  <h1>Login</h1>
+  <div class="card">
+    <h1>Login</h1>
 
-  <!-- mensagens de erro/sucesso vindas da query string -->
-  <div th:if="${param.error}" class="msg erro">Usuário ou senha inválidos.</div>
-  <div th:if="${param.logout}" class="msg ok">Você saiu da sua conta.</div>
+    <!-- mensagens -->
+    <div th:if="${param.error}" class="msg erro">Usuário ou senha inválidos.</div>
+    <div th:if="${param.logout}" class="msg ok">Você saiu da sua conta.</div>
 
-  <form th:action="@{/login}" method="post">
-    <!-- CSRF -->
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <form th:action="@{/login}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-    <label>
-      E-mail
-      <input type="email" name="email" placeholder="voce@exemplo.com" required>
-    </label>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" placeholder="voce@exemplo.com" required>
+      </div>
 
-    <label>
-      Senha
-      <input type="password" name="password" placeholder="••••••••" required>
-    </label>
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required>
+      </div>
 
-    <button type="submit">Entrar</button>
-  </form>
-
-  <p style="margin-top:12px">
-    <a th:href="@{/}">Voltar ao início</a>
-  </p>
+      <div class="actions">
+        <button type="submit" class="btn salvar">Entrar</button>
+        <a th:href="@{/}" class="btn cancelar">Voltar</a>
+      </div>
+    </form>
+  </div>
 </body>
 </html>
