@@ -1,0 +1,152 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Corpo */
+body {
+    background-color: #fffaf5;
+    color: #333;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #fff6ed;
+    border-bottom: 1px solid #f0e2d1;
+    padding: 12px 20px;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    color: #e94e1b;
+    font-size: 1.5rem;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #e94e1b;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: #c63c0d;
+}
+
+.auth-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Botões */
+.btn {
+    background-color: #e94e1b;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #c63c0d;
+}
+
+.btn-danger {
+    background-color: #c63c0d;
+}
+
+.inline-form {
+    display: inline;
+}
+
+/* Container principal */
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+/* Mensagens */
+.msg {
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 5px;
+    font-size: 0.95rem;
+}
+
+.ok {
+    background: #e8ffe8;
+    border: 1px solid #b6e3b6;
+}
+
+.err {
+    background: #ffe8e8;
+    border: 1px solid #e3b6b6;
+}
+
+/* Tabela */
+.table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.receitas-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.receitas-table th,
+.receitas-table td {
+    border: 1px solid #f0e2d1;
+    padding: 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.receitas-table th {
+    background-color: #fff6ed;
+    color: #e94e1b;
+}
+
+.receitas-table tr:nth-child(even) {
+    background-color: #fffaf5;
+}
+
+.link {
+    color: #e94e1b;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.link:hover {
+    color: #c63c0d;
+}
+
+.muted {
+    color: #888;
+    font-size: 0.9rem;
+}

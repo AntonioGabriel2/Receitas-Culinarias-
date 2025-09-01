@@ -3,25 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <title>Detalhes da Receita</title>
-  <style>
-    body{font-family:sans-serif;max-width:760px;margin:24px auto}
-    dt{font-weight:bold} dd{margin:0 0 12px}
-    pre{white-space:pre-wrap}
-  </style>
+  <link rel="stylesheet" href="/css/receita_detalhes.css">
 </head>
 <body>
-  <h1>Detalhes da Receita</h1>
+  <div class="container">
+    <h1 th:text="${receita.nome}">Nome da Receita</h1>
 
-  <dl>
-    <dt>ID</dt><dd th:text="${receita.id}">1</dd>
-    <dt>Nome</dt><dd th:text="${receita.nome}">Nome</dd>
-    <dt>Ingredientes</dt><dd><pre th:text="${receita.ingredientes}">-</pre></dd>
-    <dt>Modo de Preparo</dt><dd><pre th:text="${receita.modoPreparo}">-</pre></dd>
-  </dl>
+    <div class="section">
+      <h2>Ingredientes</h2>
+      <p class="ingredientes" th:text="${receita.ingredientes}">-</p>
+    </div>
 
-  <p>
-    <a th:href="@{|/receitas/${receita.id}/edit|}">Editar</a> |
-    <a th:href="@{/receitas}">Voltar</a>
-  </p>
+    <div class="section">
+      <h2>Modo de Preparo</h2>
+      <p class="modo-preparo" th:text="${receita.modoPreparo}">-</p>
+    </div>
+
+    <div class="actions">
+      <a th:href="@{|/receitas/${receita.id}/edit|}" class="btn">Editar</a>
+      <a th:href="@{/receitas}" class="btn btn-secondary">Voltar</a>
+    </div>
+  </div>
 </body>
 </html>
