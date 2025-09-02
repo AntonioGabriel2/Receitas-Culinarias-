@@ -1,0 +1,110 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+    background-color: #faf6f2;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 50px 15px;
+}
+
+/* Container principal */
+.container {
+    width: 100%;
+    max-width: 800px;
+    background: #fff;
+    padding: 35px 40px;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+/* Animação suave na entrada */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Nome da Receita */
+h1 {
+    color: #e94e1b;
+    font-size: 2.4rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 25px;
+    letter-spacing: 1px;
+}
+
+/* Seções */
+.section {
+    margin-bottom: 30px;
+}
+
+.section h2 {
+    font-size: 1.3rem;
+    color: #c63c0d;
+    margin-bottom: 12px;
+    border-left: 4px solid #e94e1b;
+    padding-left: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Texto dos ingredientes e modo de preparo */
+.ingredientes,
+.modo-preparo {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    background-color: #fff7f1;
+    padding: 16px 20px;
+    border-radius: 8px;
+    white-space: pre-wrap; /* mantém formatação original */
+    color: #444;
+    border: 1px solid #f0e2d1;
+}
+
+/* Botões */
+.actions {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.btn {
+    background-color: #e94e1b;
+    color: #fff;
+    padding: 12px 26px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+    border: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-block;
+    box-shadow: 0 4px 8px rgba(233, 78, 27, 0.3);
+}
+
+.btn:hover {
+    background-color: #c63c0d;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: #f0e2d1;
+    color: #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary:hover {
+    background-color: #e2d3c1;
+}

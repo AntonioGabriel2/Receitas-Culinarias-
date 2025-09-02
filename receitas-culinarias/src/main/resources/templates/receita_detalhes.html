@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalhes da Receita</title>
+  <link rel="stylesheet" href="/css/receita_detalhes.css">
+</head>
+<body>
+  <div class="container">
+    <h1 th:text="${receita.nome}">Nome da Receita</h1>
+
+    <div class="section">
+      <h2>Ingredientes</h2>
+      <p class="ingredientes" th:text="${receita.ingredientes}">-</p>
+    </div>
+
+    <div class="section">
+      <h2>Modo de Preparo</h2>
+      <p class="modo-preparo" th:text="${receita.modoPreparo}">-</p>
+    </div>
+
+    <div class="actions">
+      <a th:href="@{|/receitas/${receita.id}/edit|}" class="btn">Editar</a>
+      <a th:href="@{/receitas}" class="btn btn-secondary">Voltar</a>
+    </div>
+  </div>
+</body>
+</html>

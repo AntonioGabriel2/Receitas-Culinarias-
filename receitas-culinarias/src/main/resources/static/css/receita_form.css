@@ -1,0 +1,95 @@
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #fff8f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .recipe-container {
+      width: 100%;
+      max-width: 600px;
+      padding: 15px;
+    }
+
+    .recipe-card {
+      background: #fff;
+      padding: 30px 25px;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    .recipe-card h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      color: #d35400;
+      margin-bottom: 20px;
+      font-family: 'Comic Neue', cursive;
+    }
+
+    .erro {
+      color: #c0392b;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin: 12px 0 6px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #d35400;
+      outline: none;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .actions button {
+      background: #e67e22;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .actions button:hover {
+      background: #ca6f1e;
+    }
+
+    .actions a {
+      text-decoration: none;
+      color: #555;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+
+    .actions a:hover {
+      color: #000;
+    }
+
+    textarea {
+    resize: none;
+    height: 80px; /* Ajuste conforme necessário */
+  }

@@ -1,21 +1,25 @@
-package br.edu.iff.ccc.webdev.model;
+package br.edu.iff.ccc.webdev.dto;
 
-import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-@Entity
-public class Receita {
+public class ReceitaDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // útil para edição; no cadastro fica null
 
+    @NotBlank(message = "O nome não pode ser vazio ou só espaços")
+    @Size(max = 150, message = "O nome deve ter no máximo 150 caracteres")
     private String nome;
 
+    @Size(max = 5000, message = "Ingredientes muito longos")
     private String ingredientes;
 
+    @Size(max = 10000, message = "Modo de preparo muito longo")
     private String modoPreparo;
 
-    // Getters e Setters
+    public ReceitaDTO() {}
+
+    // Getters/Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

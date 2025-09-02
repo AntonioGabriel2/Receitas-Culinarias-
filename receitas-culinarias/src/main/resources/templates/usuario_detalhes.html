@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalhes do Usuário</title>
+  <style>
+    body{font-family:sans-serif;max-width:720px;margin:24px auto}
+    dt{font-weight:bold} dd{margin:0 0 12px}
+  </style>
+</head>
+<body>
+  <h1>Detalhes do Usuário</h1>
+
+  <dl>
+    <dt>ID</dt><dd th:text="${usuario.id}">1</dd>
+    <dt>Nome</dt><dd th:text="${usuario.nome}">Nome</dd>
+    <dt>CPF</dt><dd th:text="${usuario.cpf}">00000000000</dd>
+    <dt>E-mail</dt><dd th:text="${usuario.email}">email@ex.com</dd>
+  </dl>
+
+  <p>
+    <a th:href="@{|/usuarios/${usuario.id}/edit|}">Editar</a> |
+    <a th:href="@{/usuarios}">Voltar</a>
+  </p>
+</body>
+</html>

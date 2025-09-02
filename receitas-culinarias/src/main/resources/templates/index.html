@@ -1,11 +1,61 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Em Construção</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receitas Culinárias</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+
 </head>
 <body>
-    <h1>Página em construção</h1>
-    <p>Em breve, receitas aqui!</p>
+    <!-- Barra de navegação -->
+    <header class="navbar">
+        <nav class="nav-container">
+            <ul class="nav-links">
+                <li><a href="#">Bebidas</a></li>
+                <li><a href="#">Entradas</a></li>
+                <li><a href="#">Pratos Principais</a></li>
+                <li><a href="#">Sobremesas</a></li>
+                <li><a href="/receitas">Receitas</a></li>
+                <li sec:authorize="hasRole('ADMIN')"><a href="/usuarios">Usuários</a></li>
+            </ul>
+
+            <div class="search-container">
+                <input type="text" placeholder="Procurar receita">
+                
+            </div>
+
+            <div class="action-btn">
+                <a href="/usuarios/new" class="btn">Cadastrar</a>
+                <a href="/login" class="btn">Login</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Carrossel -->
+    <section class="carousel">
+        <div class="slides">
+            <div class="slide active">
+                <img src="/images/bebidas.png" alt="Receita 1" class="banner-img">
+                <div class="caption">Receita 1</div>
+            </div>
+            <div class="slide">
+                <img src="/images/entradas.jpg" alt="Receita 2" class="banner-img">
+                <div class="caption">Receita 2</div>
+            </div>
+            <div class="slide">
+                <img src="/images/pratos.jpeg" alt="Receita 3" class="banner-img">
+                <div class="caption">Receita 3</div>
+            </div>
+            <div class="slide">
+                <img src="/images/sobremesas.jpg" alt="Receita 4" class="banner-img">
+                <div class="caption">Receita 4</div>
+            </div>
+        </div>
+        <div class="dots"></div>
+    </section>
+
+    <script src="/js/carousel.js"></script>
 </body>
 </html>

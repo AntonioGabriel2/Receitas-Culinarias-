@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Receitas</title>
+    <link rel="stylesheet" href="/css/receita.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="logo">🍲 Receitas</h1>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Início</a></li>
+                <li><a th:href="@{/contato}">Contato</a></li>
+            </ul>
+            <div class="auth-container">
+                <span th:if="${#authorization.expression('isAuthenticated()')}">
+                    Logado como <strong th:text="${#authentication.name}">user</strong>
+                    <form th:action="@{/logout}" method="post" class="inline-form">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn">Sair</button>
+                    </form>
+                </span>
+                <a th:if="${#authorization.expression('!isAuthenticated()')}" th:href="@{/login}" class="btn">Entrar</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mensagens -->
+    <div class="container">
+        <div class="msg ok" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="msg err" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+        <!-- Botão Nova Receita -->
+        <p th:if="${#authorization.expression('hasAnyRole(''ADMIN'',''COZINHEIRO'')')}">
+            <a th:href="@{/receitas/new}" class="btn">+ Nova receita</a>
+        </p>
+
+        <!-- Tabela de Receitas -->
+        <div class="table-container">
+            <table class="receitas-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Ingredientes</th>
+                        <th>Modo de Preparo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="r : ${receitas}">
+                        <td th:text="${r.id}">1</td>
+                        <td th:text="${r.nome}">Nome</td>
+                        <td><div th:text="${r.ingredientes}">-</div></td>
+                        <td><div th:text="${r.modoPreparo}">-</div></td>
+                        <td class="actions">
+                            <a th:href="@{|/receitas/${r.id}|}" class="link">Detalhes</a>
+                            <span th:if="${#authorization.expression('hasAnyRole(''ADMIN'',''COZINHEIRO'')')}">
+                                | <a th:href="@{|/receitas/${r.id}/edit|}" class="link">Editar</a>
+                                | <form th:action="@{|/receitas/${r.id}/delete|}" method="post"
+                                        onsubmit="return confirm('Tem certeza que deseja excluir esta receita?');"
+                                        class="inline-form">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" class="btn btn-danger">Excluir</button>
+                                </form>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(receitas)}">
+                        <td colspan="5" class="muted">Nenhuma receita cadastrada.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
