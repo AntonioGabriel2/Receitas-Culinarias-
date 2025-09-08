@@ -45,7 +45,7 @@ public class UsuarioController {
     }
 
     /* CRIAR (livre) */
-    @PostMapping("")
+    @PostMapping("/new")
     public String criar(@Valid @ModelAttribute("usuario") UsuarioDTO dto,
                         BindingResult br, RedirectAttributes ra) {
         if (br.hasErrors()) return "usuario_form";

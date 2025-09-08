@@ -83,13 +83,6 @@ public class UsuarioService {
         return repo.findByEmailIgnoreCase(email.toLowerCase());
     }
 
-    @Transactional
-    public Usuario tornarCozinheiro(Long id) {
-        Usuario u = repo.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
-        u.setPerfil(Perfil.COZINHEIRO);
-        return repo.save(u);
-    }
 
     @Transactional
     public void solicitarCozinheiro(Long id) {

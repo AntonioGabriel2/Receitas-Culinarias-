@@ -17,7 +17,7 @@
       Se isEdit = true  -> POST /usuarios/{id}
       Se isEdit = false -> POST /usuarios
     -->
-    <form th:action="${isEdit} ? @{/usuarios/{id}(id=${id})} : @{/usuarios}"
+    <form th:action="${isEdit} ? @{/usuarios/{id}(id=${id})} : @{/usuarios/new}"
           th:object="${usuario}" method="post" novalidate class="form">
 
       <!-- erros globais -->
