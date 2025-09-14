@@ -92,6 +92,17 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.POST, "/comentarios/*/delete").authenticated(); // controller valida se é admin/autor
                 // leitura é pela mesma página de detalhes, já liberada
 
+                // Favoritos: autenticado pode (des)favoritar e ver a página de favoritos
+                auth.requestMatchers(HttpMethod.POST,
+                        "/receitas/*/favoritar",
+                        "/receitas/*/desfavoritar").authenticated();
+                auth.requestMatchers(HttpMethod.GET, "/favoritos").authenticated();
+
+                // (depois) sua regra já existente que restringe POSTS de criação/edição de receitas:
+                auth.requestMatchers(HttpMethod.POST, "/receitas/**")
+                    .hasAnyRole("COZINHEIRO", "ADMIN");
+
+
                 // Formulários de receitas (COZINHEIRO/ADMIN)
                 auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/receitas/new", "/receitas/*/edit")
                         .hasAnyRole("COZINHEIRO", "ADMIN");
