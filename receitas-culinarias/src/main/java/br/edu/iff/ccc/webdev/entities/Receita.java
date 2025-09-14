@@ -2,6 +2,8 @@ package br.edu.iff.ccc.webdev.entities;
 
 import java.io.Serializable;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "receitas")
@@ -13,6 +15,10 @@ public class Receita implements Serializable {
 
     @Column(nullable = false, length = 150)
     private String nome;
+
+    
+    @OneToMany(mappedBy = "receita", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comentario> comentarios = new ArrayList<>();
 
     @Column(length = 5000)
     private String ingredientes;
@@ -51,6 +57,8 @@ public class Receita implements Serializable {
 
     public Usuario getCriadoPor() { return criadoPor; }
     public void setCriadoPor(Usuario criadoPor) { this.criadoPor = criadoPor; }
+
+    public List<Comentario> getComentarios() { return comentarios; }
 
     @Override public int hashCode() { return (id == null) ? 0 : id.hashCode(); }
 
