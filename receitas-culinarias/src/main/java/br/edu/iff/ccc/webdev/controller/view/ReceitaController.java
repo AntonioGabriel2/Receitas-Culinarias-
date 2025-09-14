@@ -77,20 +77,27 @@ public class ReceitaController {
 
     /* DETALHES */
     @GetMapping("/{id}")
-    public String detalhes(@PathVariable Long id, Model model, RedirectAttributes ra) {
-        Receita r = service.findById(id).orElse(null);
+    public String detalhes(@PathVariable Long id,
+                        Model model,
+                        RedirectAttributes ra,
+                        org.springframework.security.core.Authentication auth) {
+
+        var r = service.findById(id).orElse(null);
         if (r == null) {
             ra.addFlashAttribute("errorMessage", "Receita não encontrada.");
             return "redirect:/receitas";
         }
         model.addAttribute("receita", r);
 
-        // carregar comentários da receita
-        List<Comentario> comentarios = comentarioService.listarPorReceita(id);
+        boolean admin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        var comentarios = comentarioService.listarPorReceita(id, admin);
         model.addAttribute("comentarios", comentarios);
 
         return "receita_detalhes";
     }
+
 
     /* FORM EDITAR — ADMIN ou DONO */
     @GetMapping("/{id}/edit")

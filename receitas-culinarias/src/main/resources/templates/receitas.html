@@ -58,6 +58,7 @@
                         <td><div th:text="${r.modoPreparo}">-</div></td>
                         <td class="actions">
                             <a th:href="@{|/receitas/${r.id}|}" class="link">Detalhes</a>
+                            | <a th:href="@{|/receitas/${r.id}#comentarios|}" class="link">Comentários</a>
 
                             <!-- Editar/Excluir: ADMIN ou DONO -->
                             <span th:if="${
