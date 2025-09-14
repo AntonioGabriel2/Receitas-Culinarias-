@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ComentarioService {
@@ -19,7 +20,9 @@ public class ComentarioService {
     private final ReceitaRepository receitaRepo;
     private final UsuarioRepository usuarioRepo;
 
-    public ComentarioService(ComentarioRepository repo, ReceitaRepository receitaRepo, UsuarioRepository usuarioRepo) {
+    public ComentarioService(ComentarioRepository repo,
+                             ReceitaRepository receitaRepo,
+                             UsuarioRepository usuarioRepo) {
         this.repo = repo;
         this.receitaRepo = receitaRepo;
         this.usuarioRepo = usuarioRepo;
@@ -27,20 +30,25 @@ public class ComentarioService {
 
     @Transactional(readOnly = true)
     public List<Comentario> listarPorReceita(Long receitaId, boolean incluirApagados) {
-        if (incluirApagados) {
-            return repo.findByReceitaIdOrderByCriadoEmAsc(receitaId);
-        }
-        return repo.findByReceitaIdAndApagadoFalseOrderByCriadoEmAsc(receitaId);
+        return incluirApagados
+                ? repo.findByReceitaIdOrderByCriadoEmAsc(receitaId)
+                : repo.findByReceitaIdAndApagadoFalseOrderByCriadoEmAsc(receitaId);
+    }
+
+    // padrão (não mostra apagados)
+    @Transactional(readOnly = true)
+    public List<Comentario> listarPorReceita(Long receitaId) {
+        return listarPorReceita(receitaId, false);
     }
 
     @Transactional
-    public Comentario adicionar(Long receitaId, String emailAutor, String texto) {
+    public Comentario criar(Long receitaId, String emailAutor, String texto) {
         Receita receita = receitaRepo.findById(receitaId)
                 .orElseThrow(() -> new IllegalArgumentException("Receita não encontrada."));
         Usuario autor = usuarioRepo.findByEmailIgnoreCase(emailAutor)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
-        String t = (texto == null) ? "" : texto.trim();
+        String t = texto == null ? "" : texto.trim();
         if (t.isEmpty()) throw new IllegalArgumentException("Texto obrigatório.");
 
         Comentario c = new Comentario(receita, autor, t);
@@ -48,23 +56,26 @@ public class ComentarioService {
     }
 
     @Transactional
-    public void softDelete(Long comentarioId, String requesterEmail, boolean isAdmin) {
+    public void excluirSoft(Long comentarioId, String requesterEmail, boolean isAdmin) {
         Comentario c = repo.findById(comentarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Comentário não encontrado."));
 
-        if (c.isApagado()) return; // idempotente
+        if (c.isApagado()) return;
 
         boolean author = c.getAutor().getEmail().equalsIgnoreCase(requesterEmail);
         if (!isAdmin && !author) {
             throw new IllegalArgumentException("Sem permissão para excluir este comentário.");
         }
 
-        Usuario apagador = usuarioRepo.findByEmailIgnoreCase(requesterEmail)
-                .orElse(null);
-
+        Usuario apagador = usuarioRepo.findByEmailIgnoreCase(requesterEmail).orElse(null);
         c.setApagado(true);
+        c.setApagadoPor(apagador);
         c.setApagadoEm(LocalDateTime.now());
-        c.setApagadoPor(apagador); // pode ser null se não achar, mas ok
         repo.save(c);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Long> receitaIdDoComentario(Long comentarioId) {
+        return repo.findById(comentarioId).map(c -> c.getReceita().getId());
     }
 }

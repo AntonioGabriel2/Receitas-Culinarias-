@@ -34,7 +34,7 @@ public class FavoritoController {
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/receitas/" + id;
+        return "redirect:/receitas/";
     }
 
     // POST /receitas/{id}/desfavoritar
@@ -48,7 +48,7 @@ public class FavoritoController {
         }
         favoritoService.desfavoritar(auth.getName(), id);
         ra.addFlashAttribute("successMessage", "Removida dos favoritos.");
-        return "redirect:/receitas/" + id;
+        return "redirect:/receitas/";
     }
 
     // GET /favoritos  (lista só do logado)

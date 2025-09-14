@@ -6,22 +6,25 @@ import java.util.Optional;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.util.Set;
 import br.edu.iff.ccc.webdev.dto.ReceitaDTO;
 import br.edu.iff.ccc.webdev.entities.Receita;
 import br.edu.iff.ccc.webdev.entities.Usuario;
 import br.edu.iff.ccc.webdev.repository.ReceitaRepository;
 import br.edu.iff.ccc.webdev.repository.UsuarioRepository;
+import br.edu.iff.ccc.webdev.repository.FavoritoRepository;
 
 @Service
 public class ReceitaService {
 
     private final ReceitaRepository repo;
     private final UsuarioRepository usuarioRepo;
+    private final FavoritoRepository favoritoRepository;
 
-    public ReceitaService(ReceitaRepository repo, UsuarioRepository usuarioRepo) {
+    public ReceitaService(ReceitaRepository repo, UsuarioRepository usuarioRepo, FavoritoRepository favoritoRepository) {
         this.repo = repo;
         this.usuarioRepo = usuarioRepo;
+        this.favoritoRepository = favoritoRepository;
     }
 
     /* CREATE — agora recebe o e-mail do dono */
@@ -100,5 +103,9 @@ public class ReceitaService {
 
     private static String trimToNull(String s) {
         return trimOrNull(s); // igual ao de cima, só semântica
+    }
+
+    public Set<Long> idsReceitasFavoritasDoUsuario(String email) {
+        return favoritoRepository.findIdsReceitasFavoritasPorEmail(email);
     }
 }

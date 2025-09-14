@@ -17,6 +17,9 @@
         <li><a href="#">Entradas</a></li>
         <li><a href="#">Pratos Principais</a></li>
         <li><a href="#">Sobremesas</a></li>
+        <li><a th:href="@{/}">Início</a></li>
+        <li sec:authorize="isAuthenticated()"><a th:href="@{/favoritos}">Favoritos</a></li>
+
         <li><a th:href="@{/receitas}">Receitas</a></li>
 
         <!-- Lista de usuários -> somente ADMIN -->

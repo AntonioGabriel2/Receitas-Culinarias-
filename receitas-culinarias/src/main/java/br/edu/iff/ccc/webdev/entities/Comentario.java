@@ -11,32 +11,28 @@ public class Comentario {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "receita_id")
+    @JoinColumn(name = "receita_id", nullable = false)
     private Receita receita;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "autor_id")
+    @JoinColumn(name = "autor_id", nullable = false)
     private Usuario autor;
 
     @Column(nullable = false, length = 2000)
     private String texto;
 
     @Column(nullable = false)
-    private LocalDateTime criadoEm = LocalDateTime.now();
-
-    // ------ Soft delete ------
-    @Column(nullable = false)
     private boolean apagado = false;
 
-    private LocalDateTime apagadoEm;
+    @Column(name = "criado_em", nullable = false)
+    private LocalDateTime criadoEm;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "apagado_por_id")
     private Usuario apagadoPor;
 
-    @Column(length = 255)
-    private String motivoExclusao;
-    // --------------------------
+    @Column(name = "apagado_em")
+    private LocalDateTime apagadoEm;
 
     protected Comentario() {}
 
@@ -46,22 +42,22 @@ public class Comentario {
         this.texto = texto;
     }
 
-    // getters/setters
+    @PrePersist
+    void prePersist() {
+        if (criadoEm == null) criadoEm = LocalDateTime.now();
+    }
+
+    // getters/setters básicos
     public Long getId() { return id; }
     public Receita getReceita() { return receita; }
-    public void setReceita(Receita receita) { this.receita = receita; }
     public Usuario getAutor() { return autor; }
-    public void setAutor(Usuario autor) { this.autor = autor; }
     public String getTexto() { return texto; }
     public void setTexto(String texto) { this.texto = texto; }
-    public LocalDateTime getCriadoEm() { return criadoEm; }
-    public void setCriadoEm(LocalDateTime criadoEm) { this.criadoEm = criadoEm; }
     public boolean isApagado() { return apagado; }
     public void setApagado(boolean apagado) { this.apagado = apagado; }
-    public LocalDateTime getApagadoEm() { return apagadoEm; }
-    public void setApagadoEm(LocalDateTime apagadoEm) { this.apagadoEm = apagadoEm; }
+    public LocalDateTime getCriadoEm() { return criadoEm; }
     public Usuario getApagadoPor() { return apagadoPor; }
     public void setApagadoPor(Usuario apagadoPor) { this.apagadoPor = apagadoPor; }
-    public String getMotivoExclusao() { return motivoExclusao; }
-    public void setMotivoExclusao(String motivoExclusao) { this.motivoExclusao = motivoExclusao; }
+    public LocalDateTime getApagadoEm() { return apagadoEm; }
+    public void setApagadoEm(LocalDateTime apagadoEm) { this.apagadoEm = apagadoEm; }
 }

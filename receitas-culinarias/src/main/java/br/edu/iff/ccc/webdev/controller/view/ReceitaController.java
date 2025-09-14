@@ -9,20 +9,22 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import br.edu.iff.ccc.webdev.controller.service.FavoritoService;
 import br.edu.iff.ccc.webdev.controller.service.ComentarioService;
 import br.edu.iff.ccc.webdev.entities.Comentario;
-import java.util.List;
 
 @Controller
 @RequestMapping("receitas")
 public class ReceitaController {
 
     private final ReceitaService service;
-    private final ComentarioService comentarioService;
+    private final FavoritoService favoritoService;
+       private final ComentarioService comentarioService;
 
     // construtor
-    public ReceitaController(ReceitaService service, ComentarioService comentarioService) {
+    public ReceitaController(ReceitaService service, FavoritoService favoritoService, ComentarioService comentarioService) {
         this.service = service;
+        this.favoritoService = favoritoService;
         this.comentarioService = comentarioService;
     }
 
@@ -37,8 +39,14 @@ public class ReceitaController {
 
     /* LISTAR */
     @GetMapping({"", "/"})
-    public String listar(Model model) {
+    public String listar(Model model, org.springframework.security.core.Authentication auth) {
         model.addAttribute("receitas", service.findAllAsc());
+
+        java.util.Set<Long> favIds = java.util.Collections.emptySet();
+        if (auth != null) {
+            favIds = favoritoService.idsReceitasFavoritasDoUsuario(auth.getName()); // e-mail do logado
+        }
+        model.addAttribute("favoritos", favIds); // Set<Long> com ids de receitas favoritas
         return "receitas";
     }
 
@@ -89,15 +97,18 @@ public class ReceitaController {
         }
         model.addAttribute("receita", r);
 
-        boolean admin = auth != null && auth.getAuthorities().stream()
+        // ADMIN vê inclusive os apagados; outros só os não-apagados
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        model.addAttribute("comentarios", comentarioService.listarPorReceita(id, isAdmin));
 
-        var comentarios = comentarioService.listarPorReceita(id, admin);
-        model.addAttribute("comentarios", comentarios);
+        // status de favorito do logado
+        boolean favoritada = auth != null && auth.isAuthenticated()
+                && favoritoService.isFavorita(auth.getName(), r.getId());
+        model.addAttribute("favoritada", favoritada);
 
         return "receita_detalhes";
     }
-
 
     /* FORM EDITAR — ADMIN ou DONO */
     @GetMapping("/{id}/edit")
