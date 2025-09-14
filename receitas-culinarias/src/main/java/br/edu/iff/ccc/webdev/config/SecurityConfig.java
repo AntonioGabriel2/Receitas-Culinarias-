@@ -105,6 +105,10 @@ public class SecurityConfig {
                 // Meu perfil (autenticado)
                 auth.requestMatchers(HttpMethod.GET, "/usuarios/me").authenticated();
 
+                auth.requestMatchers(HttpMethod.POST, "/receitas/*/comentarios").authenticated();
+                auth.requestMatchers(HttpMethod.POST, "/comentarios/*/delete").authenticated(); // controller valida se é admin/autor
+                // leitura é pela mesma página de detalhes, já liberada
+
                 // Listagem geral só ADMIN
                 auth.requestMatchers(HttpMethod.GET, "/usuarios", "/usuarios/").hasRole("ADMIN");
 
