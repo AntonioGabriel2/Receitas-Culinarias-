@@ -9,15 +9,21 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import br.edu.iff.ccc.webdev.controller.service.ComentarioService;
+import br.edu.iff.ccc.webdev.entities.Comentario;
+import java.util.List;
 
 @Controller
 @RequestMapping("receitas")
 public class ReceitaController {
 
     private final ReceitaService service;
+    private final ComentarioService comentarioService;
 
-    public ReceitaController(ReceitaService service) {
+    // construtor
+    public ReceitaController(ReceitaService service, ComentarioService comentarioService) {
         this.service = service;
+        this.comentarioService = comentarioService;
     }
 
     private boolean isAdmin(org.springframework.security.core.Authentication auth) {
@@ -78,6 +84,11 @@ public class ReceitaController {
             return "redirect:/receitas";
         }
         model.addAttribute("receita", r);
+
+        // carregar comentários da receita
+        List<Comentario> comentarios = comentarioService.listarPorReceita(id);
+        model.addAttribute("comentarios", comentarios);
+
         return "receita_detalhes";
     }
 
