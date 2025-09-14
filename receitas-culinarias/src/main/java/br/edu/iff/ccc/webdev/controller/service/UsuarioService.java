@@ -86,27 +86,36 @@ public class UsuarioService {
 
     @Transactional
     public void solicitarCozinheiro(Long id) {
-        Usuario u = repo.findById(id)
+        var u = repo.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
-        if (u.getPerfil() == Perfil.COZINHEIRO) throw new IllegalArgumentException("Você já é cozinheiro.");
-        if (u.isPedidoCozinheiroPendente()) throw new IllegalArgumentException("Pedido já enviado.");
+
+        if (u.getPerfil() == Perfil.ADMIN || u.getPerfil() == Perfil.COZINHEIRO) {
+            throw new IllegalArgumentException("Este usuário já é COZINHEIRO/ADMIN.");
+        }
+        if (u.isPedidoCozinheiroPendente()) {
+            throw new IllegalArgumentException("Já existe um pedido pendente.");
+        }
+
         u.setPedidoCozinheiroPendente(true);
         repo.save(u);
     }
 
     @Transactional
     public void aprovarCozinheiro(Long id) {
-        Usuario u = repo.findById(id)
+        var u = repo.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
         u.setPerfil(Perfil.COZINHEIRO);
         u.setPedidoCozinheiroPendente(false);
         repo.save(u);
     }
 
+
     @Transactional
     public void rejeitarCozinheiro(Long id) {
-        Usuario u = repo.findById(id)
+        var u = repo.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
         u.setPedidoCozinheiroPendente(false);
         repo.save(u);
     }

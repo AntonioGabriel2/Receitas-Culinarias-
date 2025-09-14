@@ -14,11 +14,20 @@ public class Receita implements Serializable {
     @Column(nullable = false, length = 150)
     private String nome;
 
-    @Column(length = 5000)        // ajuste se quiser
+    @Column(length = 5000)
     private String ingredientes;
 
-    @Column(length = 10000)       // ajuste se quiser
+    @Column(length = 10000)
     private String modoPreparo;
+
+    // >>> Dono da receita (muitas receitas para um usuário)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+        name = "criado_por_id",
+        nullable = false,
+        foreignKey = @ForeignKey(name = "fk_receita_criado_por")
+    )
+    private Usuario criadoPor;
 
     protected Receita() {} // JPA
 
@@ -39,6 +48,9 @@ public class Receita implements Serializable {
 
     public String getModoPreparo() { return modoPreparo; }
     public void setModoPreparo(String modoPreparo) { this.modoPreparo = modoPreparo; }
+
+    public Usuario getCriadoPor() { return criadoPor; }
+    public void setCriadoPor(Usuario criadoPor) { this.criadoPor = criadoPor; }
 
     @Override public int hashCode() { return (id == null) ? 0 : id.hashCode(); }
 

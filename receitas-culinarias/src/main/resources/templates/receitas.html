@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <title>Receitas</title>
-    <link rel="stylesheet" href="/css/receita.css">
+    <link rel="stylesheet" th:href="@{/css/receita.css}">
 </head>
 <body>
     <!-- Navbar -->
@@ -22,7 +22,8 @@
                         <button type="submit" class="btn">Sair</button>
                     </form>
                 </span>
-                <a th:if="${#authorization.expression('!isAuthenticated()')}" th:href="@{/login}" class="btn">Entrar</a>
+                <a th:if="${#authorization.expression('!isAuthenticated()')}"
+                   th:href="@{/login}" class="btn">Entrar</a>
             </div>
         </div>
     </nav>
@@ -32,7 +33,7 @@
         <div class="msg ok" th:if="${successMessage}" th:text="${successMessage}"></div>
         <div class="msg err" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
-        <!-- Botão Nova Receita -->
+        <!-- Botão Nova Receita (ADMIN ou COZINHEIRO) -->
         <p th:if="${#authorization.expression('hasAnyRole(''ADMIN'',''COZINHEIRO'')')}">
             <a th:href="@{/receitas/new}" class="btn">+ Nova receita</a>
         </p>
@@ -57,7 +58,12 @@
                         <td><div th:text="${r.modoPreparo}">-</div></td>
                         <td class="actions">
                             <a th:href="@{|/receitas/${r.id}|}" class="link">Detalhes</a>
-                            <span th:if="${#authorization.expression('hasAnyRole(''ADMIN'',''COZINHEIRO'')')}">
+
+                            <!-- Editar/Excluir: ADMIN ou DONO -->
+                            <span th:if="${
+                                #authorization.expression('hasRole(''ADMIN'')')
+                                or (r.criadoPor != null and #authentication.name == r.criadoPor.email)
+                            }">
                                 | <a th:href="@{|/receitas/${r.id}/edit|}" class="link">Editar</a>
                                 | <form th:action="@{|/receitas/${r.id}/delete|}" method="post"
                                         onsubmit="return confirm('Tem certeza que deseja excluir esta receita?');"
@@ -68,6 +74,7 @@
                             </span>
                         </td>
                     </tr>
+
                     <tr th:if="${#lists.isEmpty(receitas)}">
                         <td colspan="5" class="muted">Nenhuma receita cadastrada.</td>
                     </tr>

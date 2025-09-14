@@ -98,12 +98,29 @@ public class SecurityConfig {
                 auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/receitas", "/receitas/").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/receitas/*").permitAll();
 
-                // Cadastro de usuário público
-                auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/usuarios/new").permitAll();
-                auth.requestMatchers(org.springframework.http.HttpMethod.POST, "/usuarios/new").permitAll();
+                // Cadastro público
+                auth.requestMatchers(HttpMethod.GET,  "/usuarios/new").permitAll();
+                auth.requestMatchers(HttpMethod.POST, "/usuarios/new").permitAll();
 
-                // Demais /usuarios/** exigem ADMIN
-                auth.requestMatchers("/usuarios/**").hasRole("ADMIN");
+                // Meu perfil (autenticado)
+                auth.requestMatchers(HttpMethod.GET, "/usuarios/me").authenticated();
+
+                // Listagem geral só ADMIN
+                auth.requestMatchers(HttpMethod.GET, "/usuarios", "/usuarios/").hasRole("ADMIN");
+
+                // >>> Pedido para virar cozinheiro (qualquer autenticado)
+                auth.requestMatchers(org.springframework.http.HttpMethod.POST, "/usuarios/*/solicitar-cozinheiro").authenticated();
+
+                // Ações administrativas explícitas
+                auth.requestMatchers(HttpMethod.POST,
+                        "/usuarios/*/aprovar-cozinheiro",
+                        "/usuarios/*/rejeitar-cozinheiro",
+                        "/usuarios/*/delete").hasRole("ADMIN");
+
+                // Visualizar/editar o próprio perfil (controller faz a checagem fina)
+                auth.requestMatchers(HttpMethod.GET,  "/usuarios/*", "/usuarios/*/edit").authenticated();
+                auth.requestMatchers(HttpMethod.POST, "/usuarios/*").authenticated();
+
 
                 // Qualquer outra URL: liberada
                 auth.anyRequest().permitAll();
