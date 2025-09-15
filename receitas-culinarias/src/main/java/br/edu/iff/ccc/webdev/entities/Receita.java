@@ -50,4 +50,9 @@ public class Receita implements Serializable {
         if (this.id == null || other.id == null) return false;
         return this.id.equals(other.id);
     }
+
+    public Receita orElse(Object object) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'orElse'");
+    }
 }

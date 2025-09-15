@@ -53,7 +53,7 @@ public class UsuarioController {
             service.cadastrar(dto);
             ra.addFlashAttribute("successMessage", "Usuário cadastrado!");
             return "redirect:/usuarios";
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             br.reject("erro.cadastro", e.getMessage());
             return "usuario_form";
         }
@@ -96,7 +96,7 @@ public class UsuarioController {
             service.atualizar(id, dto);
             ra.addFlashAttribute("successMessage", "Usuário atualizado!");
             return "redirect:/usuarios";
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             br.reject("erro.atualizar", e.getMessage());
             model.addAttribute("modo", "edit");
             model.addAttribute("id", id);
