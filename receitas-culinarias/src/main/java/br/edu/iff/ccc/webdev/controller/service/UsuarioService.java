@@ -2,6 +2,10 @@ package br.edu.iff.ccc.webdev.controller.service;
 
 import br.edu.iff.ccc.webdev.dto.UsuarioDTO;
 import br.edu.iff.ccc.webdev.entities.Usuario;
+import br.edu.iff.ccc.webdev.exception.CpfJaCadastradoException;
+import br.edu.iff.ccc.webdev.exception.EmailJaCadastradoException;
+import br.edu.iff.ccc.webdev.exception.SenhaObrigatoriaException;
+import br.edu.iff.ccc.webdev.exception.UsuarioNaoEncontrado;
 import br.edu.iff.ccc.webdev.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,13 +27,13 @@ public class UsuarioService {
     @Transactional
     public Usuario cadastrar(UsuarioDTO dto) {
         if (dto.getSenha() == null || dto.getSenha().isBlank()) {
-            throw new IllegalArgumentException("Senha obrigatória no cadastro.");
+            throw new SenhaObrigatoriaException();
         }
         String cpf   = dto.getCpf().replaceAll("\\D", "");
         String email = dto.getEmail().toLowerCase();
 
-        if (repo.existsByCpf(cpf))                     throw new IllegalArgumentException("CPF já cadastrado.");
-        if (repo.existsByEmailIgnoreCase(email))       throw new IllegalArgumentException("E-mail já cadastrado.");
+        if (repo.existsByCpf(cpf))                     throw new CpfJaCadastradoException(cpf);
+        if (repo.existsByEmailIgnoreCase(email))       throw new EmailJaCadastradoException(email);
 
         Usuario u = new Usuario(dto.getNome(), cpf, email, encoder.encode(dto.getSenha()));
         return repo.save(u);
@@ -39,13 +43,13 @@ public class UsuarioService {
     @Transactional
     public Usuario atualizar(Long id, UsuarioDTO dto) {
         Usuario u = repo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+                .orElseThrow(() -> new UsuarioNaoEncontrado(id));
 
         String emailNovo = dto.getEmail().toLowerCase();
         // garante unicidade do email no update
         if (!u.getEmail().equalsIgnoreCase(emailNovo)
                 && repo.existsByEmailIgnoreCase(emailNovo)) {
-            throw new IllegalArgumentException("E-mail já cadastrado.");
+            throw new EmailJaCadastradoException(emailNovo);
         }
 
         u.setNome(dto.getNome());
@@ -72,7 +76,7 @@ public class UsuarioService {
     @Transactional
     public void excluir(Long id) {
         if (!repo.existsById(id)) {
-            throw new IllegalArgumentException("Usuário não encontrado.");
+            throw new UsuarioNaoEncontrado(id);
         }
         repo.deleteById(id);
     }
@@ -86,7 +90,7 @@ public class UsuarioService {
     @Transactional
     public Usuario tornarCozinheiro(Long id) {
         Usuario u = repo.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+            .orElseThrow(() -> new UsuarioNaoEncontrado(id));
         u.setPerfil(Perfil.COZINHEIRO);
         return repo.save(u);
     }
@@ -104,7 +108,7 @@ public class UsuarioService {
     @Transactional
     public void aprovarCozinheiro(Long id) {
         Usuario u = repo.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+            .orElseThrow(() -> new UsuarioNaoEncontrado(id));
         u.setPerfil(Perfil.COZINHEIRO);
         u.setPedidoCozinheiroPendente(false);
         repo.save(u);
@@ -113,7 +117,7 @@ public class UsuarioService {
     @Transactional
     public void rejeitarCozinheiro(Long id) {
         Usuario u = repo.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+            .orElseThrow(() -> new UsuarioNaoEncontrado(id));
         u.setPedidoCozinheiroPendente(false);
         repo.save(u);
     }

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.iff.ccc.webdev.dto.ReceitaDTO;
 import br.edu.iff.ccc.webdev.entities.Receita;
+import br.edu.iff.ccc.webdev.exception.ReceitaNaoEncontrada;
 import br.edu.iff.ccc.webdev.repository.ReceitaRepository;
 
 @Service
@@ -38,7 +39,7 @@ public class ReceitaService {
     @Transactional
     public Receita atualizar(Long id, ReceitaDTO dto) {
         Receita r = repo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Receita não encontrada."));
+                .orElseThrow(() -> new ReceitaNaoEncontrada(id));
 
         String nome = trimToNull(dto.getNome());
         if (nome == null) throw new IllegalArgumentException("Nome obrigatório.");
@@ -57,15 +58,16 @@ public class ReceitaService {
 
     /* READ - one (entidade) */
     @Transactional(readOnly = true)
-    public Optional<Receita> findById(Long id) {
-        return repo.findById(id);
+    public Receita findById(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new ReceitaNaoEncontrada(id));
     }
 
     /* DELETE */
     @Transactional
     public void excluir(Long id) {
         if (!repo.existsById(id)) {
-            throw new IllegalArgumentException("Receita não encontrada.");
+            throw new ReceitaNaoEncontrada(id);
         }
         repo.deleteById(id);
     }
