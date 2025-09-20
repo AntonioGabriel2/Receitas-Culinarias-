@@ -49,15 +49,23 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        // 1) CSRF (ignorar para /h2-console/**)
+        // 1) CSRF (ignorar para H2 e Swagger)
         http.csrf(new org.springframework.security.config.Customizer<
                 org.springframework.security.config.annotation.web.configurers.CsrfConfigurer<HttpSecurity>>() {
             @Override
             public void customize(
                     org.springframework.security.config.annotation.web.configurers.CsrfConfigurer<HttpSecurity> csrf) {
-                csrf.ignoringRequestMatchers("/h2-console/**");
+
+                csrf.ignoringRequestMatchers(
+                    "/h2-console/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs.yaml"
+                );
             }
         });
+
 
         // 2) Headers: permitir frames da mesma origem (H2 Console)
         http.headers(new org.springframework.security.config.Customizer<
@@ -87,6 +95,14 @@ public class SecurityConfig {
                 // Públicos (sem login)
                 auth.requestMatchers("/h2-console/**", "/css/**", "/js/**", "/img/**").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/login").permitAll();
+
+                // >> Swagger/OpenAPI
+                auth.requestMatchers(
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs.yaml"
+                ).permitAll();
 
                 auth.requestMatchers(HttpMethod.POST, "/receitas/*/comentarios").authenticated();
                 auth.requestMatchers(HttpMethod.POST, "/comentarios/*/delete").authenticated(); // controller valida se é admin/autor
@@ -135,6 +151,8 @@ public class SecurityConfig {
                 // Visualizar/editar o próprio perfil (controller faz a checagem fina)
                 auth.requestMatchers(HttpMethod.GET,  "/usuarios/*", "/usuarios/*/edit").authenticated();
                 auth.requestMatchers(HttpMethod.POST, "/usuarios/*").authenticated();
+
+                auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
 
 
                 // Qualquer outra URL: liberada
