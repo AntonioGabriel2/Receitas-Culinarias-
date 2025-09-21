@@ -4,6 +4,7 @@ import br.edu.iff.ccc.webdev.repository.UsuarioRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import static org.springframework.http.HttpMethod.*;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -61,7 +62,8 @@ public class SecurityConfig {
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
-                    "/v3/api-docs.yaml"
+                    "/v3/api-docs.yaml",
+                    "/api/**"
                 );
             }
         });
@@ -84,6 +86,25 @@ public class SecurityConfig {
                 });
             }
         });
+
+        // Ignorar CSRF nos endpoints REST (apenas DEV)
+        http.csrf(new org.springframework.security.config.Customizer<
+                org.springframework.security.config.annotation.web.configurers.CsrfConfigurer<org.springframework.security.config.annotation.web.builders.HttpSecurity>>() {
+        @Override
+        public void customize(
+            org.springframework.security.config.annotation.web.configurers.CsrfConfigurer<org.springframework.security.config.annotation.web.builders.HttpSecurity> csrf) {
+            csrf.ignoringRequestMatchers("/api/**");
+        }
+        });
+
+        // Habilitar HTTP Basic (facilita testar no Postman/Insomnia)
+        http.httpBasic(new org.springframework.security.config.Customizer<
+                org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer<org.springframework.security.config.annotation.web.builders.HttpSecurity>>() {
+        @Override
+        public void customize(
+            org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer<org.springframework.security.config.annotation.web.builders.HttpSecurity> hb) { }
+        });
+
 
         // 3) Autorização por URL (ordem importa)
         http.authorizeHttpRequests(new org.springframework.security.config.Customizer<
@@ -153,6 +174,9 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.POST, "/usuarios/*").authenticated();
 
                 auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+
+                // API: precisa estar autenticado (GET/POST/DELETE)
+                auth.requestMatchers("/api/**").authenticated();
 
 
                 // Qualquer outra URL: liberada
