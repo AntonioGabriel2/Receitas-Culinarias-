@@ -45,7 +45,7 @@ public class UsuarioController {
     }
 
     /* CRIAR (livre) */
-    @PostMapping("")
+    @PostMapping("/new")
     public String criar(@Valid @ModelAttribute("usuario") UsuarioDTO dto,
                         BindingResult br, RedirectAttributes ra) {
         if (br.hasErrors()) return "usuario_form";
@@ -104,21 +104,6 @@ public class UsuarioController {
         }
     }
 
-    /* SOLICITAR COZINHEIRO (somente o próprio) */
-    @PostMapping("/{id}/solicitar-cozinheiro")
-    public String solicitarCozinheiro(@PathVariable Long id, Authentication auth, RedirectAttributes ra) {
-        if (!isSelf(id, auth)) {
-            ra.addFlashAttribute("errorMessage","Você só pode solicitar no seu próprio usuário.");
-            return "redirect:/usuarios";
-        }
-        try {
-            service.solicitarCozinheiro(id);
-            ra.addFlashAttribute("successMessage","Solicitação enviada ao administrador.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/usuarios";
-    }
 
     /* APROVAR/REJEITAR (ADMIN) */
     @PostMapping("/{id}/aprovar-cozinheiro")
@@ -145,16 +130,31 @@ public class UsuarioController {
         return "redirect:/usuarios";
     }
 
-    /* ===== DETALHES (GET /usuarios/{id}) ===== */
+    // ajustar: detalhes só ADMIN ou o próprio
     @GetMapping("/{id}")
-    public String detalhes(@PathVariable Long id, Model model, RedirectAttributes ra) {
+    public String detalhes(@PathVariable Long id,
+                        Model model,
+                        RedirectAttributes ra,
+                        org.springframework.security.core.Authentication auth) {
+        // permitir admin ou dono
+        boolean admin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean self = auth != null && service.findById(id)
+                .map(u -> u.getEmail().equalsIgnoreCase(auth.getName()))
+                .orElse(false);
+
+        if (!(admin || self)) {
+            ra.addFlashAttribute("errorMessage","Sem permissão para ver este usuário.");
+            return "redirect:/";
+        }
+
         var opt = service.findById(id);
         if (opt.isEmpty()) {
             ra.addFlashAttribute("errorMessage","Usuário não encontrado.");
             return "redirect:/usuarios";
         }
         model.addAttribute("usuario", opt.get());
-        return "usuario_detalhes"; // templates/usuario_detalhes.html
+        return "usuario_detalhes";
     }
 
     // Excluir: POST /usuarios/{id}/delete (apenas ADMIN)
@@ -169,4 +169,58 @@ public class UsuarioController {
         }
         return "redirect:/usuarios";
     }
+
+    /* ====== ENDPOINTS /usuarios/me ====== */
+
+    // Descobrir ID do logado pelo email do Authentication
+    private Long myId(Authentication auth) {
+        if (auth == null) return null;
+        return service.findByEmail(auth.getName())
+                    .map(Usuario::getId)
+                    .orElse(null);
+    }
+
+    // novo: /usuarios/me -> redireciona para /usuarios/{id do logado}
+    @GetMapping("/me")
+    public String meuPerfil(Authentication auth, RedirectAttributes ra) {
+        if (auth == null) {
+            ra.addFlashAttribute("errorMessage", "Faça login para ver seu perfil.");
+            return "redirect:/login";
+        }
+        // precisa de um método no service para buscar por e-mail
+        var opt = service.findByEmail(auth.getName());
+        if (opt.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "Usuário não encontrado.");
+            return "redirect:/";
+        }
+        return "redirect:/usuarios/" + opt.get().getId();
+    }
+
+    // Form de edição do meu perfil (reaproveita /{id}/edit)
+    @GetMapping("/me/editar")
+    public String editarMeuPerfil(Authentication auth, RedirectAttributes ra) {
+        Long id = myId(auth);
+        if (id == null) { ra.addFlashAttribute("errorMessage","Usuário não encontrado."); return "redirect:/login"; }
+        return "redirect:/usuarios/" + id + "/edit";
+    }
+
+    // Solicitar virar cozinheiro (reaproveita /{id}/solicitar-cozinheiro)
+    // próprio usuário
+    @PostMapping("/me/solicitar-cozinheiro")
+    public String solicitarCozinheiroMeu(Authentication auth, RedirectAttributes ra) {
+        Long id = myId(auth);
+        if (id == null) {
+            ra.addFlashAttribute("errorMessage","Usuário não encontrado.");
+            return "redirect:/login";
+        }
+        try {
+            service.solicitarCozinheiro(id);
+            ra.addFlashAttribute("successMessage","Solicitação enviada ao administrador.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/usuarios/" + id;
+    }
+
+
 }

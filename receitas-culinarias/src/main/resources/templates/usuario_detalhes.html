@@ -1,26 +1,62 @@
 <!DOCTYPE html>
-<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
   <meta charset="UTF-8">
   <title>Detalhes do Usuário</title>
   <style>
     body{font-family:sans-serif;max-width:720px;margin:24px auto}
-    dt{font-weight:bold} dd{margin:0 0 12px}
+    dt{font-weight:bold}
+    dd{margin:0 0 12px}
+    .ok{background:#e7f6ec;border:1px solid #7ac08a;padding:8px;border-radius:6px;margin-bottom:12px}
+    .err{background:#fdeaea;border:1px solid #e08b8b;padding:8px;border-radius:6px;margin-bottom:12px}
+    .actions form{display:inline}
+    .actions button{margin-right:8px}
   </style>
 </head>
 <body>
   <h1>Detalhes do Usuário</h1>
+
+  <!-- mensagens flash -->
+  <div th:if="${successMessage}" class="ok" th:text="${successMessage}"></div>
+  <div th:if="${errorMessage}" class="err" th:text="${errorMessage}"></div>
 
   <dl>
     <dt>ID</dt><dd th:text="${usuario.id}">1</dd>
     <dt>Nome</dt><dd th:text="${usuario.nome}">Nome</dd>
     <dt>CPF</dt><dd th:text="${usuario.cpf}">00000000000</dd>
     <dt>E-mail</dt><dd th:text="${usuario.email}">email@ex.com</dd>
+    <dt>Perfil</dt><dd th:text="${usuario.perfil}">USUARIO</dd>
   </dl>
 
-  <p>
+  <!-- ação: pedir para virar cozinheiro (somente o próprio usuário logado e quando perfil = USUARIO) -->
+  <div class="actions"
+       sec:authorize="isAuthenticated()"
+       th:if="${#authentication.name == usuario.email and usuario.perfil.name() == 'USUARIO'}">
+    <form th:action="@{/usuarios/me/solicitar-cozinheiro}" method="post" class="actions"
+          sec:authorize="isAuthenticated()">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <button type="submit">Solicitar para virar cozinheiro</button>
+    </form>
+    <span th:if="${usuario.pedidoCozinheiroPendente}">(pedido pendente)</span>
+  </div>
+
+  <!-- ações administrativas: aprovar/rejeitar (somente ADMIN, quando houver pedido pendente) -->
+  <div class="actions" sec:authorize="hasRole('ADMIN')" th:if="${usuario.pedidoCozinheiroPendente}">
+    <form th:action="@{|/usuarios/${usuario.id}/aprovar-cozinheiro|}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <button type="submit">Aprovar</button>
+    </form>
+    <form th:action="@{|/usuarios/${usuario.id}/rejeitar-cozinheiro|}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <button type="submit">Rejeitar</button>
+    </form>
+  </div>
+
+  <p style="margin-top:16px;">
     <a th:href="@{|/usuarios/${usuario.id}/edit|}">Editar</a> |
-    <a th:href="@{/usuarios}">Voltar</a>
+    <a th:href="@{/}">Voltar</a>
   </p>
 </body>
 </html>

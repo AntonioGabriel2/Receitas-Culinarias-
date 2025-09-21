@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Calculadora Simples</title>
+  </head>
+  <body>
+
+    <center>
+      <table>
+        <tbody>
+          <tr>
+            <td colspan="4" align="right" style="border: 1px solid black; padding: 5px;">
+              <span id="calc-output">0</span>
+            </td>
+          </tr>
+
+          <tr>
+            <td><input type="button" value="1" id="button-1"></td>
+            <td><input type="button" value="2" id="button-2"></td>
+            <td><input type="button" value="3" id="button-3"></td>
+            <td><input type="button" value="C" id="button-C"></td>
+          </tr>
+
+          <tr>
+            <td><input type="button" value="4" id="button-4"></td>
+            <td><input type="button" value="5" id="button-5"></td>
+            <td><input type="button" value="6" id="button-6"></td>
+            <td><input type="button" value="+" id="button-+"></td>
+          </tr>
+
+          <tr>
+            <td><input type="button" value="7" id="button-7"></td>
+            <td><input type="button" value="8" id="button-8"></td>
+            <td><input type="button" value="9" id="button-9"></td>
+            <td><input type="button" value="-" id="button--"></td>
+          </tr>
+
+          <tr>
+            <td><input type="button" value="*" id="button-*"></td>
+            <td><input type="button" value="0" id="button-0"></td>
+            <td><input type="button" value="/" id="button-/"></td>
+            <td><input type="button" value="=" id="button-="></td>
+          </tr>
+        </tbody>
+      </table>
+    </center>
+
+    <script>
+      let output = document.getElementById("calc-output");
+      let expression = "";
+
+      function updateDisplay() {
+        output.textContent = expression || "0";
+      }
+
+      function appendValue(value) {
+        expression += value;
+        updateDisplay();
+      }
+
+      function clearDisplay() {
+        expression = "";
+        updateDisplay();
+      }
+
+      function calculate() {
+        try {
+          expression = eval(expression).toString();
+        } catch {
+          expression = "Erro";
+        }
+        updateDisplay();
+      }
+
+      const buttons = document.querySelectorAll("input[type=button]");
+      buttons.forEach(btn => {
+        const value = btn.value;
+        if (value === "C") {
+          btn.onclick = clearDisplay;
+        } else if (value === "=") {
+          btn.onclick = calculate;
+        } else {
+          btn.onclick = () => appendValue(value);
+        }
+      });
+    </script>
+
+  </body>
+</html>

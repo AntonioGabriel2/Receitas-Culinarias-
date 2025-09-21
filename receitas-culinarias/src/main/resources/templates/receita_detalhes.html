@@ -1,28 +1,142 @@
 <!DOCTYPE html>
-<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
   <meta charset="UTF-8">
-  <title>Detalhes da Receita</title>
-  <link rel="stylesheet" href="/css/receita_detalhes.css">
+  <title th:text="${receita.nome}">Detalhes da Receita</title>
+
+  <!-- se preferir CSS externo, troque por: <link rel="stylesheet" th:href="@{/css/receita_detalhes.css}"> -->
+  <style>
+    :root { --bg:#fffaf5; --card:#ffffff; --muted:#666; --borda:#eee; --prim:#e85d04; }
+    *{box-sizing:border-box}
+    body{margin:0;padding:24px;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#222}
+    .container{max-width:980px;margin:0 auto}
+    .msg{padding:10px 12px;border-radius:8px;margin-bottom:12px}
+    .msg.ok{background:#e7f6ec;border:1px solid #7ac08a}
+    .msg.err{background:#fdeaea;border:1px solid #e08b8b}
+    h1{margin:0 0 8px;font-size:40px;line-height:1.1;color:var(--prim)}
+    .section{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:18px 20px;margin:16px 0}
+    .section h2{margin:0 0 10px;font-size:18px;letter-spacing:.08em;color:#1a1a1a}
+    .ingredientes,.modo-preparo{white-space:pre-wrap;background:#fff7f1;border:1px solid #f6ddcd;border-radius:10px;padding:12px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid #ddd;background:#fff;text-decoration:none;color:#222;cursor:pointer}
+    .btn:hover{background:#f7f7f7}
+    .btn.secondary{background:#f4f4f4}
+    .comments{list-style:none;padding:0;margin:0}
+    .comment-item{border:1px solid var(--borda);border-radius:12px;padding:12px 14px;margin:10px 0;background:#fff}
+    .comment-header{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+    .comment-header .when{font-size:.9em;color:var(--muted)}
+    .comment-body{white-space:pre-wrap}
+    .comment-actions{margin-top:8px}
+    .muted{color:var(--muted)}
+    .inline{display:inline}
+    textarea{width:100%;border:1px solid #ddd;border-radius:10px;padding:10px;font:inherit}
+    label{display:block;margin:8px 0 6px;font-weight:600}
+  </style>
 </head>
 <body>
   <div class="container">
+
+    <!-- Mensagens flash -->
+    <div class="msg ok" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="msg err" th:if="${errorMessage}"  th:text="${errorMessage}"></div>
+
     <h1 th:text="${receita.nome}">Nome da Receita</h1>
 
     <div class="section">
-      <h2>Ingredientes</h2>
+      <h2>INGREDIENTES</h2>
       <p class="ingredientes" th:text="${receita.ingredientes}">-</p>
     </div>
 
     <div class="section">
-      <h2>Modo de Preparo</h2>
+      <h2>MODO DE PREPARO</h2>
       <p class="modo-preparo" th:text="${receita.modoPreparo}">-</p>
     </div>
 
-    <div class="actions">
-      <a th:href="@{|/receitas/${receita.id}/edit|}" class="btn">Editar</a>
-      <a th:href="@{/receitas}" class="btn btn-secondary">Voltar</a>
+    <div class="actions" style="margin-bottom:16px;">
+      <!-- Editar: ADMIN ou dono -->
+      <a class="btn"
+         th:if="${ #authorization.expression('hasRole(''ADMIN'')')
+                  or (receita.criadoPor != null and #authentication != null
+                      and #authentication.name == receita.criadoPor.email) }"
+         th:href="@{|/receitas/${receita.id}/edit|}">Editar</a>
+
+      <a th:href="@{/receitas}" class="btn secondary">Voltar para lista</a>
     </div>
+
+    <!-- ==================== COMENTÁRIOS ==================== -->
+    <div class="section" id="comentarios">
+      <h2>COMENTÁRIOS</h2>
+
+      <div th:if="${#lists.isEmpty(comentarios)}" class="muted">Ainda não há comentários.</div>
+
+      <ul th:if="${!#lists.isEmpty(comentarios)}" class="comments">
+        <li th:each="c : ${comentarios}" class="comment-item">
+          <div class="comment-header">
+            <strong th:text="${c.autor != null ? c.autor.nome : 'Anônimo'}">Autor</strong>
+            <span class="when" th:if="${c.criadoEm != null}"
+                  th:text="${#temporals.format(c.criadoEm, 'dd/MM/yyyy HH:mm')}">00/00/0000 00:00</span>
+          </div>
+
+          <!-- Não apagado -->
+          <div class="comment-body" th:if="${!c.apagado}" th:text="${c.texto}">Texto do comentário…</div>
+
+          <!-- Apagado: admin vê conteúdo, os demais veem placeholder -->
+          <div class="comment-body" th:if="${c.apagado}">
+            <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+              <em>
+                [Comentário excluído
+                <span th:if="${c.apagadoEm != null}">
+                  em <span th:text="${#temporals.format(c.apagadoEm,'dd/MM/yyyy HH:mm')}">-</span>
+                </span>
+                <span th:if="${c.apagadoPor != null}">
+                  por <span th:text="${c.apagadoPor.nome}">admin</span>
+                </span>
+                <span th:if="${c.motivoExclusao != null}">
+                  — <span th:text="${c.motivoExclusao}">motivo</span>
+                </span>
+                ]
+              </em>
+              <br><span th:text="${c.texto}">conteúdo original</span>
+            </div>
+            <div class="muted" th:unless="${#authorization.expression('hasRole(''ADMIN'')')}">
+              Comentário excluído pela moderação.
+            </div>
+          </div>
+
+          <!-- Excluir: ADMIN ou autor; apenas se não apagado -->
+          <div class="comment-actions"
+               th:if="${ !c.apagado and (
+                        #authorization.expression('hasRole(''ADMIN'')')
+                        or (#authentication != null and c.autor != null and #authentication.name == c.autor.email)
+                      ) }">
+            <form th:action="@{|/comentarios/${c.id}/delete|}" method="post" class="inline">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <button type="submit" class="btn">Excluir</button>
+            </form>
+          </div>
+        </li>
+      </ul>
+
+      <!-- Novo comentário (só autenticado) -->
+      <div class="comment-form" th:if="${#authorization.expression('isAuthenticated()')}">
+        <form th:action="@{|/receitas/${receita.id}/comentarios|}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <label for="texto">Escreva seu comentário:</label>
+          <textarea id="texto" name="texto" rows="3" required minlength="1" maxlength="2000"
+                    placeholder="Compartilhe sua opinião ou dica…"></textarea>
+          <div style="margin-top:8px;">
+            <button type="submit" class="btn">Publicar</button>
+          </div>
+        </form>
+      </div>
+
+      <p class="muted" th:if="${#authorization.expression('!isAuthenticated()')}">
+        <a th:href="@{/login}">Entre</a> para comentar.
+      </p>
+    </div>
+    <!-- ===================================================== -->
   </div>
 </body>
 </html>

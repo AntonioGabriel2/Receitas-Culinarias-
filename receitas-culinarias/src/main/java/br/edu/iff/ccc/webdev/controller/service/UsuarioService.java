@@ -87,20 +87,19 @@ public class UsuarioService {
         return repo.findByEmailIgnoreCase(email.toLowerCase());
     }
 
-    @Transactional
-    public Usuario tornarCozinheiro(Long id) {
-        Usuario u = repo.findById(id)
-            .orElseThrow(() -> new UsuarioNaoEncontrado(id));
-        u.setPerfil(Perfil.COZINHEIRO);
-        return repo.save(u);
-    }
 
     @Transactional
     public void solicitarCozinheiro(Long id) {
-        Usuario u = repo.findById(id)
+        var u = repo.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
-        if (u.getPerfil() == Perfil.COZINHEIRO) throw new IllegalArgumentException("Você já é cozinheiro.");
-        if (u.isPedidoCozinheiroPendente()) throw new IllegalArgumentException("Pedido já enviado.");
+
+        if (u.getPerfil() == Perfil.ADMIN || u.getPerfil() == Perfil.COZINHEIRO) {
+            throw new IllegalArgumentException("Este usuário já é COZINHEIRO/ADMIN.");
+        }
+        if (u.isPedidoCozinheiroPendente()) {
+            throw new IllegalArgumentException("Já existe um pedido pendente.");
+        }
+
         u.setPedidoCozinheiroPendente(true);
         repo.save(u);
     }
@@ -114,12 +113,11 @@ public class UsuarioService {
         repo.save(u);
     }
 
+
     @Transactional
     public void rejeitarCozinheiro(Long id) {
         Usuario u = repo.findById(id)
             .orElseThrow(() -> new UsuarioNaoEncontrado(id));
         u.setPedidoCozinheiroPendente(false);
-        repo.save(u);
     }
 }
-

@@ -1,0 +1,94 @@
+package br.edu.iff.ccc.webdev.controller.restapi;
+
+import br.edu.iff.ccc.webdev.controller.service.ComentarioService;
+import br.edu.iff.ccc.webdev.entities.Comentario;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1")
+public class ComentarioApiController {
+
+    private final ComentarioService service;
+
+    public ComentarioApiController(ComentarioService service) {
+        this.service = service;
+    }
+
+    // GET /api/receitas/{id}/comentarios?incluirApagados=true|false
+    @GetMapping("/receitas/{id}/comentarios")
+    public List<ComentarioView> listar(@PathVariable Long id,
+                                       @RequestParam(defaultValue = "false") boolean incluirApagados,
+                                       Authentication auth) {
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        var lista = service.listarPorReceita(id, incluirApagados && isAdmin);
+        return lista.stream().map(ComentarioView::of).toList();
+    }
+
+    // POST /api/receitas/{id}/comentarios   { "texto": "..." }
+    @PostMapping("/receitas/{id}/comentarios")
+    public ResponseEntity<?> criar(@PathVariable Long id,
+                                   @RequestBody NovoComentario req,
+                                   Authentication auth) {
+        if (auth == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Precisa estar logado.");
+        }
+        try {
+            Comentario c = service.criar(id, auth.getName(), req.texto());
+            return ResponseEntity.status(HttpStatus.CREATED).body(ComentarioView.of(c));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // DELETE /api/comentarios/{id}  (soft delete)
+    @DeleteMapping("/comentarios/{id}")
+    public ResponseEntity<?> excluir(@PathVariable Long id, Authentication auth) {
+        if (auth == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Precisa estar logado.");
+        }
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        try {
+            service.excluirSoft(id, auth.getName(), isAdmin);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ===== DTOs da API =====
+
+    public record NovoComentario(String texto) { }
+
+    public record ComentarioView(
+            Long id,
+            String texto,
+            String autorNome,
+            String autorEmail,
+            LocalDateTime criadoEm,
+            boolean apagado,
+            LocalDateTime apagadoEm,
+            String apagadoPor
+    ) {
+        static ComentarioView of(Comentario c) {
+            return new ComentarioView(
+                    c.getId(),
+                    c.getTexto(),
+                    c.getAutor() != null ? c.getAutor().getNome() : null,
+                    c.getAutor() != null ? c.getAutor().getEmail() : null,
+                    c.getCriadoEm(),
+                    c.isApagado(),
+                    c.getApagadoEm(),
+                    (c.getApagadoPor() != null ? c.getApagadoPor().getNome() : null)
+            );
+        }
+    }
+}
