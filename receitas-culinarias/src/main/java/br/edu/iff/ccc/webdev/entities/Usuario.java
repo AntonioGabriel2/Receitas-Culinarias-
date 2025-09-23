@@ -1,5 +1,7 @@
 package br.edu.iff.ccc.webdev.entities;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import jakarta.persistence.Column;
@@ -9,6 +11,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -25,11 +28,9 @@ public class Usuario {
     @Column(nullable = false)
     private boolean pedidoCozinheiroPendente = false;
 
-    
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Perfil perfil = Perfil.USUARIO; // padrão
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,14 +49,16 @@ public class Usuario {
     @Column(name = "senha_hash", nullable = false, length = 60)
     private String senhaHash; // BCrypt ~60 chars
 
-    // Construtor exigido pelo JPA
+    // Lado inverso (opcional) — não cria coluna, apenas navegação
+    @OneToMany(mappedBy = "criadoPor")
+    private List<Receita> receitas = new ArrayList<>();
+
     public Usuario() {}
 
-    // Construtor de conveniência para criação
     public Usuario(String nome, String cpf, String email, String senhaHash) {
         this.nome = nome;
-        this.cpf = cpf == null ? null : cpf.replaceAll("\\D", "");      // normaliza CPF
-        this.email = email == null ? null : email.toLowerCase();         // normaliza e-mail
+        this.cpf = cpf == null ? null : cpf.replaceAll("\\D", "");
+        this.email = email == null ? null : email.toLowerCase();
         this.senhaHash = senhaHash;
         this.perfil = Perfil.USUARIO; // default
     }
@@ -67,7 +70,8 @@ public class Usuario {
     public String getEmail() { return email; }
     public String getSenhaHash() { return senhaHash; }
     public Perfil getPerfil() { return perfil; }
-    
+    public boolean isPedidoCozinheiroPendente() { return pedidoCozinheiroPendente; }
+    public List<Receita> getReceitas() { return receitas; }
 
     // Setters só para campos mutáveis
     public void setId(Long id) { this.id = id; }
@@ -75,9 +79,6 @@ public class Usuario {
     public void setEmail(String email) { this.email = email == null ? null : email.toLowerCase(); }
     public void setSenhaHash(String senhaHash) { this.senhaHash = senhaHash; }
     public void setPerfil(Perfil perfil) { this.perfil = perfil; }
-
-    // getters/setters
-    public boolean isPedidoCozinheiroPendente() { return pedidoCozinheiroPendente; }
     public void setPedidoCozinheiroPendente(boolean v) { this.pedidoCozinheiroPendente = v; }
 
     // equals/hashCode baseados no CPF (chave natural)

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Meus Favoritos</title>
+  <link rel="stylesheet" th:href="@{/css/receita.css}">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <h1 class="logo">⭐ Favoritos</h1>
+      <a th:href="@{/receitas}" class="btn">Todas as receitas</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="msg err" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    <div class="msg ok"  th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <div th:if="${#lists.isEmpty(receitas)}" class="muted">Você ainda não favoritou nenhuma receita.</div>
+
+    <table th:if="${!#lists.isEmpty(receitas)}" class="receitas-table">
+      <thead><tr><th>ID</th><th>Nome</th><th>Ações</th></tr></thead>
+      <tbody>
+        <tr th:each="r : ${receitas}">
+          <td th:text="${r.id}">1</td>
+          <td th:text="${r.nome}">Nome</td>
+          <td>
+            <a th:href="@{|/receitas/${r.id}|}">Abrir</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

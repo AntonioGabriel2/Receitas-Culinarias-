@@ -1,61 +1,79 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receitas Culinárias</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Receitas Culinárias</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-    <!-- Barra de navegação -->
-    <header class="navbar">
-        <nav class="nav-container">
-            <ul class="nav-links">
-                <li><a href="#">Bebidas</a></li>
-                <li><a href="#">Entradas</a></li>
-                <li><a href="#">Pratos Principais</a></li>
-                <li><a href="#">Sobremesas</a></li>
-                <li><a href="/receitas">Receitas</a></li>
-                <li sec:authorize="hasRole('ADMIN')"><a href="/usuarios">Usuários</a></li>
-            </ul>
+  <!-- Barra de navegação -->
+  <header class="navbar">
+    <nav class="nav-container">
+      <ul class="nav-links">
+        <li><a href="#">Bebidas</a></li>
+        <li><a href="#">Entradas</a></li>
+        <li><a href="#">Pratos Principais</a></li>
+        <li><a href="#">Sobremesas</a></li>
+        <li><a th:href="@{/}">Início</a></li>
+        <li sec:authorize="isAuthenticated()"><a th:href="@{/favoritos}">Favoritos</a></li>
 
-            <div class="search-container">
-                <input type="text" placeholder="Procurar receita">
-                
-            </div>
+        <li><a th:href="@{/receitas}">Receitas</a></li>
 
-            <div class="action-btn">
-                <a href="/usuarios/new" class="btn">Cadastrar</a>
-                <a href="/login" class="btn">Login</a>
-            </div>
-        </nav>
-    </header>
+        <!-- Lista de usuários -> somente ADMIN -->
+        <li sec:authorize="hasRole('ADMIN')">
+          <a th:href="@{/usuarios}">Usuários</a>
+        </li>
 
-    <!-- Carrossel -->
-    <section class="carousel">
-        <div class="slides">
-            <div class="slide active">
-                <img src="/images/bebidas.png" alt="Receita 1" class="banner-img">
-                <div class="caption">Receita 1</div>
-            </div>
-            <div class="slide">
-                <img src="/images/entradas.jpg" alt="Receita 2" class="banner-img">
-                <div class="caption">Receita 2</div>
-            </div>
-            <div class="slide">
-                <img src="/images/pratos.jpeg" alt="Receita 3" class="banner-img">
-                <div class="caption">Receita 3</div>
-            </div>
-            <div class="slide">
-                <img src="/images/sobremesas.jpg" alt="Receita 4" class="banner-img">
-                <div class="caption">Receita 4</div>
-            </div>
-        </div>
-        <div class="dots"></div>
-    </section>
+        <!-- Meu perfil -> qualquer autenticado -->
+        <li sec:authorize="isAuthenticated()">
+          <a th:href="@{/usuarios/me}">Meu perfil</a>
+        </li>
+      </ul>
 
-    <script src="/js/carousel.js"></script>
+      <div class="search-container">
+        <input type="text" placeholder="Procurar receita">
+      </div>
+
+      <div class="action-btn">
+        <!-- Quando NÃO autenticado -->
+        <a sec:authorize="isAnonymous()" th:href="@{/usuarios/new}" class="btn">Cadastrar</a>
+        <a sec:authorize="isAnonymous()" th:href="@{/login}" class="btn">Login</a>
+
+        <!-- Quando autenticado -->
+        <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display:inline;">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <button type="submit" class="btn">Sair</button>
+        </form>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Carrossel -->
+  <section class="carousel">
+    <div class="slides">
+      <div class="slide active">
+        <img th:src="@{/images/bebidas.png}" alt="Receita 1" class="banner-img">
+        <div class="caption">Receita 1</div>
+      </div>
+      <div class="slide">
+        <img th:src="@{/images/entradas.jpg}" alt="Receita 2" class="banner-img">
+        <div class="caption">Receita 2</div>
+      </div>
+      <div class="slide">
+        <img th:src="@{/images/pratos.jpeg}" alt="Receita 3" class="banner-img">
+        <div class="caption">Receita 3</div>
+      </div>
+      <div class="slide">
+        <img th:src="@{/images/sobremesas.jpg}" alt="Receita 4" class="banner-img">
+        <div class="caption">Receita 4</div>
+      </div>
+    </div>
+    <div class="dots"></div>
+  </section>
+
+  <script th:src="@{/js/carousel.js}"></script>
 </body>
 </html>
