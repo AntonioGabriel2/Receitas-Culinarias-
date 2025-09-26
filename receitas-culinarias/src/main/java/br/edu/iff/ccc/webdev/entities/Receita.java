@@ -41,6 +41,18 @@ public class Receita implements Serializable {
     private List<Ingrediente> ingredientes = new ArrayList<>();
 
 
+    // dentro de Receita.java
+    @OneToMany(mappedBy = "receita", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Avaliacao> avaliacoes = new java.util.ArrayList<>();
+
+    // agregados p/ média: soma e quantidade
+    @Column(name = "rating_sum", nullable = false)
+    private long ratingSum = 0;
+
+    @Column(name = "rating_count", nullable = false)
+    private int ratingCount = 0;
+
+
     // Receita.java
 
     protected Receita() {} // exigido pelo JPA
@@ -87,6 +99,15 @@ public class Receita implements Serializable {
     public void setCriadoPor(Usuario criadoPor) { this.criadoPor = criadoPor; }
 
     public List<Comentario> getComentarios() { return comentarios; }
+
+        // leitura prática da média (não persiste)
+    @Transient
+    public double getRatingMedia() {
+        return (ratingCount == 0) ? 0.0 : ((double) ratingSum) / ratingCount;
+    }
+
+    public int getRatingCount() { return ratingCount; }
+    // (getters de ratingSum/ratingCount se quiser; setters não são necessários publicamente)
 
     /** Getter padrão (JPA/Thymeleaf/JSON) */
     public List<Ingrediente> getIngredientes() {
