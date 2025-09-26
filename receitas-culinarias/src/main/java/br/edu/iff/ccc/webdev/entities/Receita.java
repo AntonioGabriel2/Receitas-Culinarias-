@@ -106,8 +106,14 @@ public class Receita implements Serializable {
         return (ratingCount == 0) ? 0.0 : ((double) ratingSum) / ratingCount;
     }
 
+    // em Receita.java
+    public long getRatingSum() { return ratingSum; }
     public int getRatingCount() { return ratingCount; }
-    // (getters de ratingSum/ratingCount se quiser; setters não são necessários publicamente)
+    public void setRatingSum(long v) { this.ratingSum = v; }
+    public void setRatingCount(int v) { this.ratingCount = v; }
+    public void incRatingSum(long delta) { this.ratingSum += delta; }
+    public void incRatingCount(int delta) { this.ratingCount += delta; }
+
 
     /** Getter padrão (JPA/Thymeleaf/JSON) */
     public List<Ingrediente> getIngredientes() {
