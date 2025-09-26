@@ -1,6 +1,7 @@
 // src/main/java/br/edu/iff/ccc/webdev/entities/Ingrediente.java
 package br.edu.iff.ccc.webdev.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -18,7 +19,8 @@ public class Ingrediente {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "receita_id", nullable = false,
-        foreignKey = @ForeignKey(name = "fk_ingrediente_receita"))
+            foreignKey = @ForeignKey(name = "fk_ingrediente_receita"))
+    @JsonBackReference
     private Receita receita;
 
     protected Ingrediente() {}

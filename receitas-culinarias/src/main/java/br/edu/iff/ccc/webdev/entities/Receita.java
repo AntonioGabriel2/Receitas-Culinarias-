@@ -1,5 +1,6 @@
 package br.edu.iff.ccc.webdev.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import java.io.Serializable;
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -20,9 +21,6 @@ public class Receita implements Serializable {
     @OneToMany(mappedBy = "receita", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comentario> comentarios = new ArrayList<>();
 
-    @Column(length = 5000)
-    private String ingredientes;
-
     @Column(length = 10000)
     private String modoPreparo;
 
@@ -33,14 +31,47 @@ public class Receita implements Serializable {
         nullable = false,
         foreignKey = @ForeignKey(name = "fk_receita_criado_por")
     )
+
     private Usuario criadoPor;
 
-    protected Receita() {} // JPA
+    // src/main/java/br/edu/iff/ccc/webdev/entities/Receita.java
+    @OneToMany(mappedBy = "receita", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("id ASC")
+    @JsonManagedReference
+    private List<Ingrediente> ingredientes = new ArrayList<>();
 
-    public Receita(String nome, String ingredientes, String modoPreparo) {
+
+    // Receita.java
+
+    protected Receita() {} // exigido pelo JPA
+
+    public Receita(String nome, String modoPreparo) {
         this.nome = nome;
-        this.ingredientes = ingredientes;
         this.modoPreparo = modoPreparo;
+    }
+
+    public Receita(String nome, java.util.List<Ingrediente> ingredientes, String modoPreparo) {
+        this(nome, modoPreparo);
+        setIngredientes(ingredientes); // usa helper pra setar a lista corretamente
+    }
+
+    // Se quiser já definir o dono no construtor:
+    public Receita(String nome, String modoPreparo, Usuario criadoPor) {
+        this(nome, modoPreparo);
+        this.criadoPor = criadoPor;
+    }
+
+    public Receita(String nome, java.util.List<Ingrediente> ingredientes, String modoPreparo, Usuario criadoPor) {
+        this(nome, ingredientes, modoPreparo);
+        this.criadoPor = criadoPor;
+    }
+
+    // Opcional: conveniência com varargs
+    public Receita(String nome, String modoPreparo, Usuario criadoPor, Ingrediente... ingredientes) {
+        this(nome, modoPreparo, criadoPor);
+        if (ingredientes != null) {
+            for (Ingrediente i : ingredientes) addIngrediente(i);
+        }
     }
 
     // getters/setters
@@ -49,9 +80,6 @@ public class Receita implements Serializable {
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
 
-    public String getIngredientes() { return ingredientes; }
-    public void setIngredientes(String ingredientes) { this.ingredientes = ingredientes; }
-
     public String getModoPreparo() { return modoPreparo; }
     public void setModoPreparo(String modoPreparo) { this.modoPreparo = modoPreparo; }
 
@@ -59,6 +87,32 @@ public class Receita implements Serializable {
     public void setCriadoPor(Usuario criadoPor) { this.criadoPor = criadoPor; }
 
     public List<Comentario> getComentarios() { return comentarios; }
+
+    /** Getter padrão (JPA/Thymeleaf/JSON) */
+    public List<Ingrediente> getIngredientes() {
+        return java.util.Collections.unmodifiableList(ingredientes);
+    }
+
+    /** Opcional: helpers para manter o vínculo dos dois lados */
+    public void addIngrediente(Ingrediente ing) {
+        if (ing == null) return;
+        ing.setReceita(this);
+        ingredientes.add(ing);
+    }
+
+    public void removeIngrediente(Ingrediente ing) {
+        if (ing == null) return;
+        ingredientes.remove(ing);
+        ing.setReceita(null);
+    }
+
+    /** Opcional: substituir conteúdo sem trocar a lista (bom para JPA) */
+    public void setIngredientes(List<Ingrediente> novos) {
+        ingredientes.clear();
+        if (novos != null) {
+            for (Ingrediente i : novos) addIngrediente(i);
+        }
+    }
 
     @Override public int hashCode() { return (id == null) ? 0 : id.hashCode(); }
 
