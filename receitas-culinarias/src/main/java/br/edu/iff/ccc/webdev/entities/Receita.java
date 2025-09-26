@@ -108,11 +108,19 @@ public class Receita implements Serializable {
 
     /** Opcional: substituir conteúdo sem trocar a lista (bom para JPA) */
     public void setIngredientes(List<Ingrediente> novos) {
+        // desanexa os antigos (boa prática com JPA bidirecional)
+        for (Ingrediente i : new ArrayList<>(ingredientes)) {
+            i.setReceita(null);
+        }
         ingredientes.clear();
+
         if (novos != null) {
-            for (Ingrediente i : novos) addIngrediente(i);
+            for (Ingrediente i : novos) {
+                addIngrediente(i); // já seta this como receita
+            }
         }
     }
+
 
     @Override public int hashCode() { return (id == null) ? 0 : id.hashCode(); }
 

@@ -132,11 +132,4 @@ public class ReceitaService {
         }
         return list;
     }
-
-    private static String joinIngredientes(List<Ingrediente> ings) {
-        if (ings == null || ings.isEmpty()) return "";
-        return ings.stream()
-                .map(Ingrediente::getNome) // ajuste o getter conforme sua classe
-                .collect(Collectors.joining("\n"));
-    }
 }

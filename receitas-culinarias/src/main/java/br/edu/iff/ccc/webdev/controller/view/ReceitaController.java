@@ -12,6 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import br.edu.iff.ccc.webdev.controller.service.FavoritoService;
 import br.edu.iff.ccc.webdev.controller.service.ComentarioService;
 import br.edu.iff.ccc.webdev.entities.Comentario;
+import br.edu.iff.ccc.webdev.entities.Ingrediente;
 
 @Controller
 @RequestMapping("receitas")
@@ -129,8 +130,15 @@ public class ReceitaController {
         ReceitaDTO dto = new ReceitaDTO();
         dto.setId(r.getId());
         dto.setNome(r.getNome());
-        dto.setIngredientes(r.getIngredientes());
         dto.setModoPreparo(r.getModoPreparo());
+
+        // List<Ingrediente> -> String (um por linha)
+        String ingredientesTexto = r.getIngredientes().stream()
+                .map(Ingrediente::getNome) // ajuste o getter conforme sua classe
+                .collect(java.util.stream.Collectors.joining("\n"));
+        dto.setIngredientes(ingredientesTexto);
+
+
 
         model.addAttribute("receita", dto);
         model.addAttribute("modo", "edit");
