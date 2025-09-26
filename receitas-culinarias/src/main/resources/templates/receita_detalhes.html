@@ -6,6 +6,10 @@
   <meta charset="UTF-8">
   <title th:text="${receita.nome}">Detalhes da Receita</title>
 
+  <!-- CSRF para chamadas fetch() -->
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
   <style>
     :root { --bg:#fffaf5; --card:#ffffff; --muted:#666; --borda:#eee; --prim:#e85d04; }
     *{box-sizing:border-box}
@@ -34,6 +38,18 @@
     .inline{display:inline}
     textarea{width:100%;border:1px solid #ddd;border-radius:10px;padding:10px;font:inherit}
     label{display:block;margin:8px 0 6px;font-weight:600}
+
+    /* ====== rating ====== */
+    .rating-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .stars{display:flex;gap:6px}
+    .star-btn{
+      font-size:26px; line-height:1; padding:4px 6px; cursor:pointer;
+      background:#fff; border:1px solid #ddd; border-radius:10px; min-width:40px;
+    }
+    .star-btn.active{background:#fff3e8; border-color:#f7c99d}
+    .star-btn:disabled{opacity:.55; cursor:not-allowed}
+    .avg{font-weight:600}
+    .tiny{font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
@@ -44,6 +60,43 @@
     <div class="msg err" th:if="${errorMessage}"  th:text="${errorMessage}"></div>
 
     <h1 th:text="${receita.nome}">Nome da Receita</h1>
+
+    <!-- ====== AVALIAÇÃO ====== -->
+    <div class="section">
+      <h2>AVALIAÇÃO</h2>
+
+      <!-- média da receita -->
+      <div class="rating-wrap" style="margin-bottom:10px">
+        <div class="avg">
+          Média:
+          <span th:text="${#numbers.formatDecimal(receita.ratingMedia, 1, 1)}">0,0</span>
+          / 5
+        </div>
+        <div class="tiny">
+          (<span th:text="${receita.ratingCount}">0</span> voto(s))
+        </div>
+      </div>
+
+      <!-- minha nota (apenas logado) -->
+      <div sec:authorize="isAuthenticated()">
+        <div class="rating-wrap">
+          <div class="tiny">Sua nota:</div>
+          <div class="stars" id="my-stars">
+            <button class="star-btn" data-val="1">★</button>
+            <button class="star-btn" data-val="2">★</button>
+            <button class="star-btn" data-val="3">★</button>
+            <button class="star-btn" data-val="4">★</button>
+            <button class="star-btn" data-val="5">★</button>
+          </div>
+          <button id="btn-remover-nota" class="btn secondary" style="display:none">Remover avaliação</button>
+        </div>
+        <div class="tiny" id="rating-hint" style="margin-top:6px">Clique nas estrelas para avaliar.</div>
+      </div>
+
+      <p class="muted" sec:authorize="!isAuthenticated()">
+        <a th:href="@{/login}">Entre</a> para avaliar esta receita.
+      </p>
+    </div>
 
     <div class="section">
       <h2>INGREDIENTES</h2>
@@ -148,5 +201,94 @@
     </div>
     <!-- ===================================================== -->
   </div>
+
+  <!-- ====== JS: rating por API ====== -->
+  <script th:inline="javascript">
+    (function(){
+      const receitaId = /*[[${receita.id}]]*/ 0;
+      const csrf = document.querySelector('meta[name="_csrf"]')?.content;
+      const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+      const starsEl = document.getElementById('my-stars');
+      const btnRemove = document.getElementById('btn-remover-nota');
+      const hint = document.getElementById('rating-hint');
+      if (!starsEl) return; // visitante não logado
+
+      function setActive(n){
+        starsEl.querySelectorAll('.star-btn').forEach(btn => {
+          const v = Number(btn.dataset.val);
+          btn.classList.toggle('active', v <= n);
+        });
+      }
+
+      function headersJson(){
+        const h = { 'Content-Type': 'application/json' };
+        if (csrf && csrfHeader) h[csrfHeader] = csrf;
+        return h;
+      }
+
+      async function carregarMinhaNota(){
+        try{
+          // ajuste a URL se seu endpoint diferir:
+          const resp = await fetch(`/api/v1/receitas/${receitaId}/avaliacoes/minha`, { method:'GET' });
+          if (resp.ok){
+            const data = await resp.json(); // {valor: 1..5}
+            if (typeof data.valor === 'number'){
+              setActive(data.valor);
+              btnRemove.style.display = 'inline-block';
+              hint.textContent = `Você avaliou com ${data.valor} estrela(s).`;
+            }
+          }
+        }catch(e){ /* silencia */ }
+      }
+
+      async function enviarAvaliacao(valor){
+        try{
+          // ajuste a URL se seu endpoint diferir:
+          const resp = await fetch(`/api/v1/receitas/${receitaId}/avaliacoes`, {
+            method:'POST',
+            headers: headersJson(),
+            body: JSON.stringify({ valor })
+          });
+          if (resp.ok || resp.status === 201){
+            window.location.reload();
+          }else{
+            const msg = await resp.text();
+            alert(msg || 'Falha ao enviar avaliação.');
+          }
+        }catch(e){
+          alert('Erro de rede ao enviar avaliação.');
+        }
+      }
+
+      async function removerAvaliacao(){
+        try{
+          // ajuste a URL se seu endpoint diferir:
+          const resp = await fetch(`/api/v1/receitas/${receitaId}/avaliacoes`, {
+            method:'DELETE',
+            headers: csrf && csrfHeader ? { [csrfHeader]: csrf } : {}
+          });
+          if (resp.ok || resp.status === 204){
+            window.location.reload();
+          }else{
+            const msg = await resp.text();
+            alert(msg || 'Falha ao remover avaliação.');
+          }
+        }catch(e){
+          alert('Erro de rede ao remover avaliação.');
+        }
+      }
+
+      starsEl.addEventListener('click', (ev)=>{
+        const btn = ev.target.closest('.star-btn');
+        if (!btn) return;
+        const v = Number(btn.dataset.val);
+        if (v >= 1 && v <= 5) enviarAvaliacao(v);
+      });
+      btnRemove.addEventListener('click', removerAvaliacao);
+
+      carregarMinhaNota();
+    })();
+  </script>
 </body>
 </html>
