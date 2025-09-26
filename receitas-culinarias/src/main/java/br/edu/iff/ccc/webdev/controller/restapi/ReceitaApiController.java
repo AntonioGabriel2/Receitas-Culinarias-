@@ -115,9 +115,22 @@ public class ReceitaApiController {
         static ReceitaListView of(Receita r) { return new ReceitaListView(r.getId(), r.getNome()); }
     }
 
-    public record ReceitaDetailView(Long id, String nome, String ingredientes, String modoPreparo) {
+    // dentro de ReceitaApiController
+
+    public record ReceitaDetailView(
+            Long id,
+            String nome,
+            List<ItemIngrediente> ingredientes,
+            String modoPreparo
+    ) {
         static ReceitaDetailView of(Receita r) {
-            return new ReceitaDetailView(r.getId(), r.getNome(), r.getIngredientes(), r.getModoPreparo());
+            var itens = r.getIngredientes().stream()
+                    .map(i -> new ItemIngrediente(i.getNome(), i.getQuantidade()))
+                    .toList();
+            return new ReceitaDetailView(r.getId(), r.getNome(), itens, r.getModoPreparo());
         }
+
+        public record ItemIngrediente(String nome, String quantidade) {}
     }
+
 }

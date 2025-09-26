@@ -138,8 +138,6 @@ public class ReceitaController {
                 .collect(java.util.stream.Collectors.joining("\n"));
         dto.setIngredientes(ingredientesTexto);
 
-
-
         model.addAttribute("receita", dto);
         model.addAttribute("modo", "edit");
         model.addAttribute("id", id);

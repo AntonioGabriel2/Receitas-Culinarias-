@@ -6,7 +6,6 @@
   <meta charset="UTF-8">
   <title th:text="${receita.nome}">Detalhes da Receita</title>
 
-  <!-- se preferir CSS externo, troque por: <link rel="stylesheet" th:href="@{/css/receita_detalhes.css}"> -->
   <style>
     :root { --bg:#fffaf5; --card:#ffffff; --muted:#666; --borda:#eee; --prim:#e85d04; }
     *{box-sizing:border-box}
@@ -19,6 +18,8 @@
     .section{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:18px 20px;margin:16px 0}
     .section h2{margin:0 0 10px;font-size:18px;letter-spacing:.08em;color:#1a1a1a}
     .ingredientes,.modo-preparo{white-space:pre-wrap;background:#fff7f1;border:1px solid #f6ddcd;border-radius:10px;padding:12px}
+    .ingredientes-lista{list-style:disc;margin:0;padding-left:22px;background:#fff7f1;border:1px solid #f6ddcd;border-radius:10px;padding:12px}
+    .ingredientes-lista li{margin:4px 0}
     .actions{display:flex;gap:10px;flex-wrap:wrap}
     .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid #ddd;background:#fff;text-decoration:none;color:#222;cursor:pointer}
     .btn:hover{background:#f7f7f7}
@@ -46,7 +47,16 @@
 
     <div class="section">
       <h2>INGREDIENTES</h2>
-      <p class="ingredientes" th:text="${receita.ingredientes}">-</p>
+
+      <div th:if="${#lists.isEmpty(receita.ingredientes)}" class="ingredientes">—</div>
+
+      <ul th:if="${!#lists.isEmpty(receita.ingredientes)}" class="ingredientes-lista">
+        <li th:each="i : ${receita.ingredientes}">
+          <span th:text="${i.nome}">Ingrediente</span>
+          <small th:if="${i.quantidade != null and !#strings.isEmpty(i.quantidade)}"
+                 th:text="${' — ' + i.quantidade}"> — 2 xícaras</small>
+        </li>
+      </ul>
     </div>
 
     <div class="section">

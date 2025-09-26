@@ -93,6 +93,11 @@ public class ReceitaService {
         if (!repo.existsById(id)) {
             throw new IllegalArgumentException("Receita não encontrada.");
         }
+
+        // apaga favoritos que apontam para essa receita
+        favoritoRepository.deleteByReceitaId(id);
+
+        // comentários e ingredientes já caem por cascade/orphanRemoval
         repo.deleteById(id);
     }
 
