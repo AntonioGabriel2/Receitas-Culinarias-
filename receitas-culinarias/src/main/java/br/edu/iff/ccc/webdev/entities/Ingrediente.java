@@ -24,6 +24,13 @@ public class Ingrediente {
     private Receita receita;
 
     protected Ingrediente() {}
+
+    public Ingrediente(String nome) { this.nome = nome; }
+    
+    public Ingrediente(String nome, String quantidade) {
+        this.nome = nome; this.quantidade = quantidade;
+    }       
+
     public Ingrediente(String nome, String quantidade, Receita receita) {
         this.nome = nome;
         this.quantidade = quantidade;
