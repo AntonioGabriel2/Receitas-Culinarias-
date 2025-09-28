@@ -31,4 +31,6 @@ public interface FavoritoRepository extends JpaRepository<Favorito, Long> {
 
     // Para listar os favoritos pela string do e-mail (ordem CRESCENTE por ID do favorito)
     List<Favorito> findAllByUsuarioEmailOrderByIdAsc(String email);
+
+    void deleteByReceitaId(Long receitaId);   // <== novo
 }

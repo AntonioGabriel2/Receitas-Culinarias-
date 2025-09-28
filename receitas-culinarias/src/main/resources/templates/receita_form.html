@@ -13,12 +13,12 @@
     <div class="recipe-card">
       <h1 th:text="${isEdit} ? 'Editar Receita' : 'Cadastrar Receita'">Receita</h1>
 
-      <!-- CSRF -->
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
       <!-- Form -->
       <form th:action="${isEdit} ? @{/receitas/{id}(id=${id})} : @{/receitas}"
             th:object="${receita}" method="post" novalidate>
+
+        <!-- CSRF (precisa estar DENTRO do form) -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
         <!-- erros globais -->
         <div class="erro" th:if="${#fields.hasGlobalErrors()}"
@@ -28,12 +28,14 @@
         <input th:field="*{nome}" placeholder="Ex.: Bolo de Cenoura" />
         <div class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></div>
 
-        <label>Ingredientes</label>
-        <textarea th:field="*{ingredientes}" placeholder="Ex.: 3 ovos, 2 xícaras de farinha, ..."></textarea>
+        <label>Ingredientes (um por linha)</label>
+        <textarea th:field="*{ingredientes}"
+                  placeholder="Ex.:&#10;2 xícaras de farinha&#10;3 ovos&#10;1 pitada de sal"
+                  rows="6"></textarea>
         <div class="erro" th:if="${#fields.hasErrors('ingredientes')}" th:errors="*{ingredientes}"></div>
 
         <label>Modo de Preparo</label>
-        <textarea th:field="*{modoPreparo}" placeholder="Passo a passo do preparo..."></textarea>
+        <textarea th:field="*{modoPreparo}" placeholder="Passo a passo do preparo..." rows="8"></textarea>
         <div class="erro" th:if="${#fields.hasErrors('modoPreparo')}" th:errors="*{modoPreparo}"></div>
 
         <div class="actions">

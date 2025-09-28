@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import br.edu.iff.ccc.webdev.controller.service.FavoritoService;
 import br.edu.iff.ccc.webdev.controller.service.ComentarioService;
+import br.edu.iff.ccc.webdev.controller.service.AvaliacaoService;
 import br.edu.iff.ccc.webdev.entities.Comentario;
+import br.edu.iff.ccc.webdev.entities.Ingrediente;
 
 @Controller
 @RequestMapping("receitas")
@@ -19,13 +21,15 @@ public class ReceitaController {
 
     private final ReceitaService service;
     private final FavoritoService favoritoService;
-       private final ComentarioService comentarioService;
+    private final ComentarioService comentarioService;
+    private final AvaliacaoService avaliacaoService;
 
     // construtor
-    public ReceitaController(ReceitaService service, FavoritoService favoritoService, ComentarioService comentarioService) {
+    public ReceitaController(ReceitaService service, FavoritoService favoritoService, ComentarioService comentarioService, AvaliacaoService avaliacaoService) {
         this.service = service;
         this.favoritoService = favoritoService;
         this.comentarioService = comentarioService;
+        this.avaliacaoService = avaliacaoService;
     }
 
     private boolean isAdmin(org.springframework.security.core.Authentication auth) {
@@ -97,6 +101,14 @@ public class ReceitaController {
         }
         model.addAttribute("receita", r);
 
+        model.addAttribute("mediaNota", r.getRatingMedia());
+        model.addAttribute("qtdeNotas", r.getRatingCount());
+
+        Integer minhaNota = (auth != null)
+                ? /* injete AvaliacaoService e chame */ avaliacaoService.notaDoUsuario(auth.getName(), id)
+                : null;
+        model.addAttribute("minhaNota", minhaNota);
+
         // ADMIN vê inclusive os apagados; outros só os não-apagados
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
@@ -129,8 +141,13 @@ public class ReceitaController {
         ReceitaDTO dto = new ReceitaDTO();
         dto.setId(r.getId());
         dto.setNome(r.getNome());
-        dto.setIngredientes(r.getIngredientes());
         dto.setModoPreparo(r.getModoPreparo());
+
+        // List<Ingrediente> -> String (um por linha)
+        String ingredientesTexto = r.getIngredientes().stream()
+                .map(Ingrediente::getNome) // ajuste o getter conforme sua classe
+                .collect(java.util.stream.Collectors.joining("\n"));
+        dto.setIngredientes(ingredientesTexto);
 
         model.addAttribute("receita", dto);
         model.addAttribute("modo", "edit");

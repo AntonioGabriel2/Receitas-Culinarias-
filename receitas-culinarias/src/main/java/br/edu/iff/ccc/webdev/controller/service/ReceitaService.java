@@ -1,13 +1,15 @@
 package br.edu.iff.ccc.webdev.controller.service;
 
 import java.util.List;
-
-
+import java.util.Optional;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Set;
 import br.edu.iff.ccc.webdev.dto.ReceitaDTO;
+import br.edu.iff.ccc.webdev.entities.Ingrediente;
 import br.edu.iff.ccc.webdev.entities.Receita;
 import br.edu.iff.ccc.webdev.exception.ReceitaNaoEncontrada;
 import br.edu.iff.ccc.webdev.entities.Usuario;
@@ -43,10 +45,13 @@ public class ReceitaService {
 
         Receita r = new Receita(
             nome,
-            trimOrNull(dto.getIngredientes()),
             trimOrNull(dto.getModoPreparo())
         );
-        r.setCriadoPor(dono); // define o dono
+        r.setCriadoPor(dono);
+
+        // String -> List<Ingrediente>
+        var lista = parseIngredientesTexto(dto.getIngredientes());
+        r.setIngredientes(lista);
 
         return repo.save(r);
     }
@@ -61,9 +66,14 @@ public class ReceitaService {
         if (nome == null) throw new IllegalArgumentException("Nome obrigatório.");
 
         r.setNome(nome);
-        r.setIngredientes(trimOrNull(dto.getIngredientes()));
         r.setModoPreparo(trimOrNull(dto.getModoPreparo()));
+
+        // String -> List<Ingrediente>
+        var lista = parseIngredientesTexto(dto.getIngredientes());
+        r.setIngredientes(lista);
+
         return repo.save(r);
+
     }
 
     /* READ - list (entidade) */
@@ -85,6 +95,11 @@ public class ReceitaService {
         if (!repo.existsById(id)) {
             throw new ReceitaNaoEncontrada(id);
         }
+
+        // apaga favoritos que apontam para essa receita
+        favoritoRepository.deleteByReceitaId(id);
+
+        // comentários e ingredientes já caem por cascade/orphanRemoval
         repo.deleteById(id);
     }
 
@@ -109,5 +124,19 @@ public class ReceitaService {
 
     public Set<Long> idsReceitasFavoritasDoUsuario(String email) {
         return favoritoRepository.findIdsReceitasFavoritasPorEmail(email);
+    }
+
+
+    private static List<Ingrediente> parseIngredientesTexto(String texto) {
+        List<Ingrediente> list = new ArrayList<>();
+        if (texto == null) return list;
+        for (String linha : texto.split("\\R")) { // quebra por linhas
+            String t = linha.trim();
+            if (!t.isEmpty()) {
+                // ajuste o construtor conforme sua classe Ingrediente
+                list.add(new Ingrediente(t));
+            }
+        }
+        return list;
     }
 }
