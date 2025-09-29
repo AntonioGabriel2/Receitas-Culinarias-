@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import br.edu.iff.ccc.webdev.controller.service.FavoritoService;
 import br.edu.iff.ccc.webdev.controller.service.ComentarioService;
 import br.edu.iff.ccc.webdev.controller.service.AvaliacaoService;
-import br.edu.iff.ccc.webdev.entities.Comentario;
+
 import br.edu.iff.ccc.webdev.entities.Ingrediente;
 
 @Controller

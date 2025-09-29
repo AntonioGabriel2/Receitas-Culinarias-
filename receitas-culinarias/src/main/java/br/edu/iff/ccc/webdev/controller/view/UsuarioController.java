@@ -3,6 +3,7 @@ package br.edu.iff.ccc.webdev.controller.view;
 import br.edu.iff.ccc.webdev.dto.UsuarioDTO;
 import br.edu.iff.ccc.webdev.entities.Usuario;
 import br.edu.iff.ccc.webdev.controller.service.UsuarioService;
+import br.edu.iff.ccc.webdev.exception.*;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -53,7 +54,7 @@ public class UsuarioController {
             service.cadastrar(dto);
             ra.addFlashAttribute("successMessage", "Usuário cadastrado!");
             return "redirect:/usuarios";
-        } catch (RuntimeException e) {
+        } catch (EmailJaCadastradoException | CpfJaCadastradoException e) {
             br.reject("erro.cadastro", e.getMessage());
             return "usuario_form";
         }
@@ -64,11 +65,14 @@ public class UsuarioController {
     public String formEditar(@PathVariable Long id, Authentication auth,
                              Model model, RedirectAttributes ra) {
         if (!(isAdmin(auth) || isSelf(id, auth))) {
-            ra.addFlashAttribute("errorMessage","Sem permissão para editar este usuário.");
+            ra.addFlashAttribute("errorMessage", "Sem permissão para editar este usuário.");
             return "redirect:/usuarios";
         }
         Usuario u = service.findById(id).orElse(null);
-        if (u == null) { ra.addFlashAttribute("errorMessage","Usuário não encontrado."); return "redirect:/usuarios"; }
+        if (u == null) {
+            ra.addFlashAttribute("errorMessage", "Usuário não encontrado.");
+            return "redirect:/usuarios";
+        }
 
         UsuarioDTO dto = new UsuarioDTO();
         dto.setNome(u.getNome());
@@ -88,22 +92,25 @@ public class UsuarioController {
                             BindingResult br, Authentication auth,
                             RedirectAttributes ra, Model model) {
         if (!(isAdmin(auth) || isSelf(id, auth))) {
-            ra.addFlashAttribute("errorMessage","Sem permissão para editar este usuário.");
+            ra.addFlashAttribute("errorMessage", "Sem permissão para editar este usuário.");
             return "redirect:/usuarios";
         }
-        if (br.hasErrors()) { model.addAttribute("modo", "edit"); model.addAttribute("id", id); return "usuario_form"; }
+        if (br.hasErrors()) {
+            model.addAttribute("modo", "edit");
+            model.addAttribute("id", id);
+            return "usuario_form";
+        }
         try {
             service.atualizar(id, dto);
             ra.addFlashAttribute("successMessage", "Usuário atualizado!");
             return "redirect:/usuarios";
-        } catch (RuntimeException e) {
+        } catch (UsuarioNaoEncontrado | EmailJaCadastradoException | CpfJaCadastradoException e) {
             br.reject("erro.atualizar", e.getMessage());
             model.addAttribute("modo", "edit");
             model.addAttribute("id", id);
             return "usuario_form";
         }
     }
-
 
     /* APROVAR/REJEITAR (ADMIN) */
     @PostMapping("/{id}/aprovar-cozinheiro")
@@ -112,7 +119,7 @@ public class UsuarioController {
         try {
             service.aprovarCozinheiro(id);
             ra.addFlashAttribute("successMessage","Usuário agora é COZINHEIRO.");
-        } catch (IllegalArgumentException e) {
+        } catch (UsuarioNaoEncontrado | PerfilJaCozinheiroOuAdminException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/usuarios";
@@ -124,7 +131,7 @@ public class UsuarioController {
         try {
             service.rejeitarCozinheiro(id);
             ra.addFlashAttribute("successMessage","Solicitação rejeitada.");
-        } catch (IllegalArgumentException e) {
+        } catch (UsuarioNaoEncontrado | PedidoCozinheiroJaExisteException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/usuarios";
@@ -135,8 +142,7 @@ public class UsuarioController {
     public String detalhes(@PathVariable Long id,
                         Model model,
                         RedirectAttributes ra,
-                        org.springframework.security.core.Authentication auth) {
-        // permitir admin ou dono
+                        Authentication auth) {
         boolean admin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         boolean self = auth != null && service.findById(id)
@@ -162,9 +168,9 @@ public class UsuarioController {
     @PreAuthorize("hasRole('ADMIN')")
     public String excluir(@PathVariable Long id, RedirectAttributes ra) {
         try {
-            service.excluir(id); // implemente no seu service se ainda não tiver
+            service.excluir(id);
             ra.addFlashAttribute("successMessage", "Usuário excluído!");
-        } catch (IllegalArgumentException e) {
+        } catch (UsuarioNaoEncontrado e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/usuarios";
@@ -172,7 +178,6 @@ public class UsuarioController {
 
     /* ====== ENDPOINTS /usuarios/me ====== */
 
-    // Descobrir ID do logado pelo email do Authentication
     private Long myId(Authentication auth) {
         if (auth == null) return null;
         return service.findByEmail(auth.getName())
@@ -180,14 +185,12 @@ public class UsuarioController {
                     .orElse(null);
     }
 
-    // novo: /usuarios/me -> redireciona para /usuarios/{id do logado}
     @GetMapping("/me")
     public String meuPerfil(Authentication auth, RedirectAttributes ra) {
         if (auth == null) {
             ra.addFlashAttribute("errorMessage", "Faça login para ver seu perfil.");
             return "redirect:/login";
         }
-        // precisa de um método no service para buscar por e-mail
         var opt = service.findByEmail(auth.getName());
         if (opt.isEmpty()) {
             ra.addFlashAttribute("errorMessage", "Usuário não encontrado.");
@@ -196,16 +199,16 @@ public class UsuarioController {
         return "redirect:/usuarios/" + opt.get().getId();
     }
 
-    // Form de edição do meu perfil (reaproveita /{id}/edit)
     @GetMapping("/me/editar")
     public String editarMeuPerfil(Authentication auth, RedirectAttributes ra) {
         Long id = myId(auth);
-        if (id == null) { ra.addFlashAttribute("errorMessage","Usuário não encontrado."); return "redirect:/login"; }
+        if (id == null) {
+            ra.addFlashAttribute("errorMessage","Usuário não encontrado.");
+            return "redirect:/login";
+        }
         return "redirect:/usuarios/" + id + "/edit";
     }
 
-    // Solicitar virar cozinheiro (reaproveita /{id}/solicitar-cozinheiro)
-    // próprio usuário
     @PostMapping("/me/solicitar-cozinheiro")
     public String solicitarCozinheiroMeu(Authentication auth, RedirectAttributes ra) {
         Long id = myId(auth);
@@ -216,11 +219,10 @@ public class UsuarioController {
         try {
             service.solicitarCozinheiro(id);
             ra.addFlashAttribute("successMessage","Solicitação enviada ao administrador.");
-        } catch (IllegalArgumentException e) {
+        } catch (PerfilJaCozinheiroOuAdminException | PedidoCozinheiroJaExisteException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/usuarios/" + id;
     }
-
 
 }

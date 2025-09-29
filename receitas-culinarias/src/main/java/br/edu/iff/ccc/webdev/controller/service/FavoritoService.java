@@ -3,6 +3,8 @@ package br.edu.iff.ccc.webdev.controller.service;
 import br.edu.iff.ccc.webdev.entities.Favorito;
 import br.edu.iff.ccc.webdev.entities.Receita;
 import br.edu.iff.ccc.webdev.entities.Usuario;
+import br.edu.iff.ccc.webdev.exception.ReceitaNaoEncontrada;
+import br.edu.iff.ccc.webdev.exception.UsuarioNaoEncontrado;
 import br.edu.iff.ccc.webdev.repository.FavoritoRepository;
 import br.edu.iff.ccc.webdev.repository.ReceitaRepository;
 import br.edu.iff.ccc.webdev.repository.UsuarioRepository;
@@ -11,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class FavoritoService {
@@ -31,9 +32,9 @@ public class FavoritoService {
     @Transactional
     public void favoritar(String emailUsuario, Long receitaId) {
         Usuario u = usuarioRepo.findByEmailIgnoreCase(emailUsuario)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+                .orElseThrow(() -> new UsuarioNaoEncontrado(emailUsuario));
         Receita r = receitaRepo.findById(receitaId)
-                .orElseThrow(() -> new IllegalArgumentException("Receita não encontrada."));
+                .orElseThrow(() -> new ReceitaNaoEncontrada(receitaId));
 
         if (favRepo.existsByUsuarioIdAndReceitaId(u.getId(), receitaId)) return; // idempotente
         favRepo.save(new Favorito(u, r));
@@ -42,7 +43,7 @@ public class FavoritoService {
     @Transactional
     public void desfavoritar(String emailUsuario, Long receitaId) {
         Usuario u = usuarioRepo.findByEmailIgnoreCase(emailUsuario)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+                .orElseThrow(() -> new UsuarioNaoEncontrado(emailUsuario));
         favRepo.deleteByUsuarioIdAndReceitaId(u.getId(), receitaId);
     }
 
@@ -55,19 +56,12 @@ public class FavoritoService {
 
     @Transactional(readOnly = true)
     public List<Receita> listarReceitasFavoritas(String emailUsuario) {
-        // Versão por ID do usuário (mantém sua lógica atual e a ordem por ID asc):
         Usuario u = usuarioRepo.findByEmailIgnoreCase(emailUsuario)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+                .orElseThrow(() -> new UsuarioNaoEncontrado(emailUsuario));
         return favRepo.findAllByUsuarioIdOrderByIdAsc(u.getId())
                       .stream()
                       .map(Favorito::getReceita)
                       .toList();
-
-        // Alternativa (se preferir, sem buscar o Usuario):
-        // return favRepo.findAllByUsuarioEmailOrderByIdAsc(emailUsuario.toLowerCase())
-        //               .stream()
-        //               .map(Favorito::getReceita)
-        //               .toList();
     }
 
     /**
@@ -75,15 +69,6 @@ public class FavoritoService {
      */
     @Transactional(readOnly = true)
     public Set<Long> idsReceitasFavoritasDoUsuario(String emailUsuario) {
-        // Mais eficiente: usa a query que já retorna só os IDs
         return favRepo.findIdsReceitasFavoritasPorEmail(emailUsuario);
-        
-        // Alternativa equivalente usando a abordagem por ID do usuário:
-        // return usuarioRepo.findByEmailIgnoreCase(emailUsuario)
-        //         .map(u -> favRepo.findAllByUsuarioIdOrderByIdAsc(u.getId())
-        //                          .stream()
-        //                          .map(f -> f.getReceita().getId())
-        //                          .collect(Collectors.toSet()))
-        //         .orElseGet(Set::of);
     }
 }

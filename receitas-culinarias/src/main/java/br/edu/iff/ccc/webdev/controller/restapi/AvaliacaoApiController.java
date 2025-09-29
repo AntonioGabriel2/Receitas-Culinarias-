@@ -4,7 +4,11 @@ package br.edu.iff.ccc.webdev.controller.restapi;
 import br.edu.iff.ccc.webdev.controller.service.AvaliacaoService;
 import br.edu.iff.ccc.webdev.controller.service.ReceitaService;
 import br.edu.iff.ccc.webdev.entities.Receita;
-import org.springframework.http.HttpStatus;
+import br.edu.iff.ccc.webdev.exception.AvaliacaoInvalidaException;
+import br.edu.iff.ccc.webdev.exception.ReceitaNaoEncontrada;
+import br.edu.iff.ccc.webdev.exception.UsuarioNaoAutenticadoException;
+
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -24,10 +28,8 @@ public class AvaliacaoApiController {
     /** GET sem sufixo: retorna média/votos e, se logado, a nota do usuário (minha). */
     @GetMapping
     public ResponseEntity<?> get(@PathVariable Long id, Authentication auth) {
-        Receita r = receitaService.findById(id).orElse(null);
-        if (r == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Receita não encontrada.");
-        }
+    Receita r = receitaService.findById(id)
+        .orElseThrow(() -> new ReceitaNaoEncontrada(id));
         Integer minha = (auth != null) ? service.notaDoUsuario(auth.getName(), id) : null;
         return ResponseEntity.ok(new RatingView(r.getRatingMedia(), r.getRatingCount(), minha));
     }
@@ -37,11 +39,11 @@ public class AvaliacaoApiController {
     public ResponseEntity<?> put(@PathVariable Long id,
                                  @RequestBody RatingRequest req,
                                  Authentication auth) {
-        if (auth == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Faça login.");
+        if (auth == null) throw new UsuarioNaoAutenticadoException();
         try {
             service.avaliar(auth.getName(), id, req.valor());
             return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
+        } catch (AvaliacaoInvalidaException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -49,7 +51,7 @@ public class AvaliacaoApiController {
     /** DELETE sem sufixo: remove a nota do usuário. */
     @DeleteMapping
     public ResponseEntity<?> delete(@PathVariable Long id, Authentication auth) {
-        if (auth == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Faça login.");
+        if (auth == null) throw new UsuarioNaoAutenticadoException();
         service.remover(auth.getName(), id);
         return ResponseEntity.noContent().build();
     }
@@ -67,7 +69,7 @@ public class AvaliacaoApiController {
     /** GET /minha: retorna somente a nota do usuário logado. */
     @GetMapping("/minha")
     public ResponseEntity<?> minha(@PathVariable Long id, Authentication auth) {
-        if (auth == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Faça login.");
+        if (auth == null) throw new UsuarioNaoAutenticadoException();
         Integer v = service.notaDoUsuario(auth.getName(), id);
         return (v == null) ? ResponseEntity.noContent().build() : ResponseEntity.ok(new Minha(v));
     }

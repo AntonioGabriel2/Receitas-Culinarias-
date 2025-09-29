@@ -4,6 +4,8 @@ import br.edu.iff.ccc.webdev.dto.UsuarioDTO;
 import br.edu.iff.ccc.webdev.entities.Usuario;
 import br.edu.iff.ccc.webdev.exception.CpfJaCadastradoException;
 import br.edu.iff.ccc.webdev.exception.EmailJaCadastradoException;
+import br.edu.iff.ccc.webdev.exception.PedidoCozinheiroJaExisteException;
+import br.edu.iff.ccc.webdev.exception.PerfilJaCozinheiroOuAdminException;
 import br.edu.iff.ccc.webdev.exception.SenhaObrigatoriaException;
 import br.edu.iff.ccc.webdev.exception.UsuarioNaoEncontrado;
 import br.edu.iff.ccc.webdev.repository.UsuarioRepository;
@@ -91,13 +93,13 @@ public class UsuarioService {
     @Transactional
     public void solicitarCozinheiro(Long id) {
         var u = repo.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+            .orElseThrow(() -> new UsuarioNaoEncontrado(id));
 
         if (u.getPerfil() == Perfil.ADMIN || u.getPerfil() == Perfil.COZINHEIRO) {
-            throw new IllegalArgumentException("Este usuário já é COZINHEIRO/ADMIN.");
+            throw new PerfilJaCozinheiroOuAdminException(u.getId());
         }
         if (u.isPedidoCozinheiroPendente()) {
-            throw new IllegalArgumentException("Já existe um pedido pendente.");
+            throw new PedidoCozinheiroJaExisteException(u.getId());
         }
 
         u.setPedidoCozinheiroPendente(true);

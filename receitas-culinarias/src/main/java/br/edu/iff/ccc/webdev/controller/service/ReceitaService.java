@@ -3,16 +3,18 @@ package br.edu.iff.ccc.webdev.controller.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
+import java.util.Set;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Set;
+
 import br.edu.iff.ccc.webdev.dto.ReceitaDTO;
 import br.edu.iff.ccc.webdev.entities.Ingrediente;
 import br.edu.iff.ccc.webdev.entities.Receita;
-import br.edu.iff.ccc.webdev.exception.ReceitaNaoEncontrada;
 import br.edu.iff.ccc.webdev.entities.Usuario;
+import br.edu.iff.ccc.webdev.exception.ReceitaNaoEncontrada;
+import br.edu.iff.ccc.webdev.exception.UsuarioNaoEncontrado;
 import br.edu.iff.ccc.webdev.repository.ReceitaRepository;
 import br.edu.iff.ccc.webdev.repository.UsuarioRepository;
 import br.edu.iff.ccc.webdev.repository.FavoritoRepository;
@@ -34,14 +36,16 @@ public class ReceitaService {
     @Transactional
     public Receita criar(ReceitaDTO dto, String emailDono) {
         String nome = trimToNull(dto.getNome());
-        if (nome == null) throw new IllegalArgumentException("Nome obrigatório.");
+        if (nome == null) {
+            throw new IllegalArgumentException("Nome obrigatório.");
+        }
 
         if (emailDono == null || emailDono.isBlank()) {
-            throw new IllegalArgumentException("Usuário logado não encontrado.");
+            throw new UsuarioNaoEncontrado("Usuário logado não encontrado.");
         }
 
         Usuario dono = usuarioRepo.findByEmailIgnoreCase(emailDono.toLowerCase())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário logado não encontrado."));
+                .orElseThrow(() -> new UsuarioNaoEncontrado(emailDono));
 
         Receita r = new Receita(
             nome,
@@ -63,7 +67,9 @@ public class ReceitaService {
                 .orElseThrow(() -> new ReceitaNaoEncontrada(id));
 
         String nome = trimToNull(dto.getNome());
-        if (nome == null) throw new IllegalArgumentException("Nome obrigatório.");
+        if (nome == null) {
+            throw new IllegalArgumentException("Nome obrigatório.");
+        }
 
         r.setNome(nome);
         r.setModoPreparo(trimOrNull(dto.getModoPreparo()));
@@ -73,7 +79,6 @@ public class ReceitaService {
         r.setIngredientes(lista);
 
         return repo.save(r);
-
     }
 
     /* READ - list (entidade) */
@@ -84,9 +89,8 @@ public class ReceitaService {
 
     /* READ - one (entidade) */
     @Transactional(readOnly = true)
-    public Receita findById(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new ReceitaNaoEncontrada(id));
+    public Optional<Receita> findById(Long id) {
+        return repo.findById(id);
     }
 
     /* DELETE */
@@ -116,7 +120,7 @@ public class ReceitaService {
         if (s == null) return null;
         String t = s.trim();
         return t.isEmpty() ? null : t;
-        }
+    }
 
     private static String trimToNull(String s) {
         return trimOrNull(s); // igual ao de cima, só semântica
@@ -125,7 +129,6 @@ public class ReceitaService {
     public Set<Long> idsReceitasFavoritasDoUsuario(String email) {
         return favoritoRepository.findIdsReceitasFavoritasPorEmail(email);
     }
-
 
     private static List<Ingrediente> parseIngredientesTexto(String texto) {
         List<Ingrediente> list = new ArrayList<>();
