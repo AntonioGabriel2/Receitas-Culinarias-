@@ -56,7 +56,7 @@ public class FavoritoApiController {
     @DeleteMapping("/receitas/{id}/favoritos")
     public ResponseEntity<?> desfavoritar(@PathVariable Long id, Authentication auth) {
         if (auth == null) throw new UsuarioNaoAutenticadoException();
-    favoritoService.favoritar(auth.getName(), id);
+        favoritoService.desfavoritar(auth.getName(), id);
         return ResponseEntity.noContent().build();
     }
 
