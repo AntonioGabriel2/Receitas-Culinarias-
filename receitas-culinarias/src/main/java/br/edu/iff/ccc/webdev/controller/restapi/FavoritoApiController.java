@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
@@ -45,12 +46,18 @@ public class FavoritoApiController {
     }
 
     // POST /api/v1/receitas/{id}/favoritos  -> 201
+// FavoritoApiController (ou no controller da Receita)
     @PostMapping("/receitas/{id}/favoritos")
-    public ResponseEntity<?> favoritar(@PathVariable Long id, Authentication auth) {
+    public ResponseEntity<Void> favoritar(@PathVariable Long id, Authentication auth) {
         if (auth == null) throw new UsuarioNaoAutenticadoException();
-        favoritoService.favoritar(auth.getName(), id);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+
+        favoritoService.favoritar(auth.getName(), id); // continua void
+
+        // Location pode ser o sub-recurso "favoritos" da receita
+        URI location = URI.create("/api/v1/receitas/%d/favoritos".formatted(id));
+        return ResponseEntity.created(location).build(); // 201 Created + Location
     }
+
 
     // DELETE /api/v1/receitas/{id}/favoritos -> 204
     @DeleteMapping("/receitas/{id}/favoritos")
