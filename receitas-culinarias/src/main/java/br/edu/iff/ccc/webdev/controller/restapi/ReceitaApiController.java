@@ -4,7 +4,12 @@ import br.edu.iff.ccc.webdev.controller.service.ReceitaService;
 import br.edu.iff.ccc.webdev.dto.ReceitaDTO;
 import br.edu.iff.ccc.webdev.entities.Receita;
 import br.edu.iff.ccc.webdev.exception.ReceitaNaoEncontrada;
-
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+@Tag(name = "Receitas", description = "CRUD de receitas")
 @RestController
 @RequestMapping("/api/v1/receitas")
 public class ReceitaApiController {
@@ -25,6 +31,10 @@ public class ReceitaApiController {
     /* ========== GET (leitura pública) ========== */
 
     // GET /api/v1/receitas  -> lista simples (id + nome)
+    @Operation(summary = "Lista receitas", description = "Retorna a lista de receitas (pode aceitar filtros)")
+    @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json"))
+    })
     @GetMapping
     public List<ReceitaListView> listarTodas() {
         return service.findAllAsc().stream()
@@ -33,6 +43,11 @@ public class ReceitaApiController {
     }
 
     // GET /api/v1/receitas/{id} -> detalhes (sem comentários)
+    @Operation(summary = "Busca receita por id")
+    @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Encontrada", content = @Content(mediaType = "application/json")),
+    @ApiResponse(responseCode = "404", description = "Receita não encontrada", content = @Content(mediaType = "application/problem+json"))
+    })
     @GetMapping("/{id}")
     public ResponseEntity<?> detalhes(@PathVariable Long id) {
         return service.findById(id)
@@ -43,6 +58,14 @@ public class ReceitaApiController {
     /* ========== POST/PUT/DELETE (exigem permissão) ========== */
 
     // POST /api/v1/receitas  (ADMIN ou COZINHEIRO)
+    @Operation(summary = "Cria uma nova receita")
+    @ApiResponses({
+    @ApiResponse(responseCode = "201", description = "Criado",
+                headers = @Header(name = "Location", description = "URL do recurso criado")),
+    @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content(mediaType = "application/problem+json")),
+    @ApiResponse(responseCode = "401", description = "Não autenticado", content = @Content(mediaType = "application/problem+json")),
+    @ApiResponse(responseCode = "403", description = "Sem permissão", content = @Content(mediaType = "application/problem+json"))
+    })
     @PostMapping
     public ResponseEntity<?> criar(@RequestBody ReceitaDTO dto,
                                    org.springframework.security.core.Authentication auth) {
@@ -65,6 +88,12 @@ public class ReceitaApiController {
     }
 
     // PUT /api/v1/receitas/{id} (ADMIN ou DONO)
+    @Operation(summary = "Atualiza receita por id")
+    @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Atualizada", content = @Content(mediaType = "application/json")),
+    @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content(mediaType = "application/problem+json")),
+    @ApiResponse(responseCode = "404", description = "Receita não encontrada", content = @Content(mediaType = "application/problem+json"))
+    })
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizar(@PathVariable Long id,
                                        @RequestBody ReceitaDTO dto,
@@ -89,6 +118,11 @@ public class ReceitaApiController {
     }
 
     // DELETE /api/v1/receitas/{id} (ADMIN ou DONO)
+    @Operation(summary = "Remove receita por id")
+    @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "Excluída"),
+    @ApiResponse(responseCode = "404", description = "Receita não encontrada", content = @Content(mediaType = "application/problem+json"))
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<?> excluir(@PathVariable Long id,
                                      org.springframework.security.core.Authentication auth) {

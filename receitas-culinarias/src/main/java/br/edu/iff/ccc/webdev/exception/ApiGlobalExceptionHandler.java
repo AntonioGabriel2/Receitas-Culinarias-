@@ -116,13 +116,19 @@ public class ApiGlobalExceptionHandler {
     }
 
     @ExceptionHandler(TextoObrigatorioException.class)
-    public ResponseEntity<String> handleTextoObrigatorio(TextoObrigatorioException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
+    public ProblemDetail handleTextoObrigatorio(HttpServletRequest req, TextoObrigatorioException e) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+        pd.setTitle("Dados inválidos");
+        addDefaults(pd, req, e);
+        return pd;
     }
 
     @ExceptionHandler(PermissaoNegadaException.class)
-    public ResponseEntity<String> handlePermissaoNegada(PermissaoNegadaException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    public ProblemDetail handlePermissaoNegada(HttpServletRequest req, PermissaoNegadaException e) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, e.getMessage());
+        pd.setTitle("Acesso negado");
+        addDefaults(pd, req, e);
+        return pd;
     }
 
 
