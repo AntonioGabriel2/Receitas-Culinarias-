@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import java.net.URI;
 import java.util.List;
 
+@Tag(name = "Usuários", description = "Cadastro e gerenciamento de usuários")
 @RestController
 @RequestMapping("/api/v1/usuarios")
 public class UsuarioApiController {
@@ -38,6 +39,11 @@ public class UsuarioApiController {
     }
 
     // GET /api/v1/usuarios/{id} — ADMIN ou o próprio
+    @Operation(summary = "Obtém usuário por id")
+    @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
+    @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(mediaType = "application/problem+json"))
+    })
     @GetMapping("/{id}")
     public ResponseEntity<?> detalhes(@PathVariable Long id, Authentication auth) {
         if (!isAdmin(auth) && !isSelf(id, auth))
@@ -60,6 +66,13 @@ public class UsuarioApiController {
     /* ======================= POSTs ======================= */
 
     // POST /api/v1/usuarios  (cadastro público)
+    @Operation(summary = "Cadastra novo usuário")
+    @ApiResponses({
+    @ApiResponse(responseCode = "201", description = "Criado",
+        headers = @Header(name = "Location", description = "URL do usuário criado")),
+    @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content(mediaType = "application/problem+json")),
+    @ApiResponse(responseCode = "409", description = "E-mail/CPF já cadastrado", content = @Content(mediaType = "application/problem+json"))
+    })
     @PostMapping
     public ResponseEntity<?> cadastrar(@RequestBody NovoUsuario req) {
         try {
@@ -118,6 +131,12 @@ public class UsuarioApiController {
     /* ======================= PUT/DELETE ======================= */
 
     // PUT /api/v1/usuarios/{id} — ADMIN ou o próprio (CPF não muda)
+    @Operation(summary = "Atualiza usuário por id")
+    @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Atualizado", content = @Content(mediaType = "application/json")),
+    @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content(mediaType = "application/problem+json")),
+    @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(mediaType = "application/problem+json"))
+    })
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizar(@PathVariable Long id,
                                        @RequestBody AtualizaUsuario req,
@@ -139,6 +158,11 @@ public class UsuarioApiController {
     }
 
     // DELETE /api/v1/usuarios/{id} — ADMIN
+    @Operation(summary = "Remove usuário por id")
+    @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "Excluído"),
+    @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(mediaType = "application/problem+json"))
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<?> excluir(@PathVariable Long id, Authentication auth) {
         if (!isAdmin(auth)) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Apenas ADMIN.");

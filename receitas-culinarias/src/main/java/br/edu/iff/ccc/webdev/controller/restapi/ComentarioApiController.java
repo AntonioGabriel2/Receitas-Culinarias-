@@ -6,11 +6,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "Comentários", description = "Comentários de receitas")
 @RestController
 @RequestMapping("/api/v1")
 public class ComentarioApiController {
@@ -22,6 +28,11 @@ public class ComentarioApiController {
     }
 
     // GET /api/receitas/{id}/comentarios?incluirApagados=true|false
+    @Operation(summary = "Lista comentários da receita")
+    @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
+    @ApiResponse(responseCode = "404", description = "Receita não encontrada", content = @Content(mediaType = "application/problem+json"))
+    })
     @GetMapping("/receitas/{id}/comentarios")
     public List<ComentarioView> listar(@PathVariable Long id,
                                        @RequestParam(defaultValue = "false") boolean incluirApagados,
@@ -34,6 +45,13 @@ public class ComentarioApiController {
     }
 
     // POST /api/receitas/{id}/comentarios   { "texto": "..." }
+    @Operation(summary = "Cria comentário na receita")
+    @ApiResponses({
+    @ApiResponse(responseCode = "201", description = "Criado",
+        headers = @Header(name = "Location", description = "URL do comentário criado")),
+    @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content(mediaType = "application/problem+json")),
+    @ApiResponse(responseCode = "401", description = "Não autenticado", content = @Content(mediaType = "application/problem+json"))
+    })
     @PostMapping("/receitas/{id}/comentarios")
     public ResponseEntity<?> criar(@PathVariable Long id,
                                 @RequestBody NovoComentario req,
@@ -46,6 +64,11 @@ public class ComentarioApiController {
 
 
     // DELETE /api/comentarios/{id}  (soft delete)
+    @Operation(summary = "Remove comentário por id")
+    @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "Excluído"),
+    @ApiResponse(responseCode = "404", description = "Comentário/Receita não encontrado", content = @Content(mediaType = "application/problem+json"))
+    })
     @DeleteMapping("/comentarios/{id}")
     public ResponseEntity<?> excluir(@PathVariable Long id, Authentication auth) {
         if (auth == null) {
