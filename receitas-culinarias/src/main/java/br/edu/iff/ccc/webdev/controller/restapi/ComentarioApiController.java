@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,18 +36,14 @@ public class ComentarioApiController {
     // POST /api/receitas/{id}/comentarios   { "texto": "..." }
     @PostMapping("/receitas/{id}/comentarios")
     public ResponseEntity<?> criar(@PathVariable Long id,
-                                   @RequestBody NovoComentario req,
-                                   Authentication auth) {
-        if (auth == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Precisa estar logado.");
-        }
-        try {
-            Comentario c = service.criar(id, auth.getName(), req.texto());
-            return ResponseEntity.status(HttpStatus.CREATED).body(ComentarioView.of(c));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+                                @RequestBody NovoComentario req,
+                                Authentication auth) {
+        if (auth == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        Comentario c = service.criar(id, auth.getName(), req.texto());
+        URI location = URI.create("/api/v1/receitas/%d/comentarios/%d".formatted(id, c.getId()));
+        return ResponseEntity.created(location).body(ComentarioView.of(c));
     }
+
 
     // DELETE /api/comentarios/{id}  (soft delete)
     @DeleteMapping("/comentarios/{id}")

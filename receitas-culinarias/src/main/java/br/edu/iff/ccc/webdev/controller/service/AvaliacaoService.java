@@ -11,6 +11,7 @@ import br.edu.iff.ccc.webdev.repository.ReceitaRepository;
 import br.edu.iff.ccc.webdev.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Optional;
 
 @Service
 public class AvaliacaoService {
@@ -29,7 +30,7 @@ public class AvaliacaoService {
     @Transactional
     public Avaliacao avaliar(String emailUsuario, Long receitaId, int valor) {
         if (valor < 1 || valor > 5) {
-            throw new NotaInvalidaException(valor); // nova exceção
+            throw new NotaInvalidaException(valor);
         }
 
         Usuario u = usuarioRepo.findByEmailIgnoreCase(emailUsuario)
@@ -45,6 +46,7 @@ public class AvaliacaoService {
             int anterior = a.getValor();
             a.setValor(valor);
 
+            // ajusta agregados na Receita (teu modelo já tem esses métodos)
             r.incRatingSum(valor - anterior);
 
             repo.save(a);
@@ -62,6 +64,7 @@ public class AvaliacaoService {
             return a;
         }
     }
+
 
     /** Remove a nota do usuário e ajusta agregados. */
     @Transactional

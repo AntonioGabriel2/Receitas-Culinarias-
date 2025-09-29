@@ -8,6 +8,7 @@ import br.edu.iff.ccc.webdev.exception.AvaliacaoInvalidaException;
 import br.edu.iff.ccc.webdev.exception.ReceitaNaoEncontrada;
 import br.edu.iff.ccc.webdev.exception.UsuarioNaoAutenticadoException;
 
+import java.net.URI;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -36,17 +37,24 @@ public class AvaliacaoApiController {
 
     /** PUT sem sufixo: cria/atualiza a nota do usuário (1..5). */
     @PutMapping
-    public ResponseEntity<?> put(@PathVariable Long id,
-                                 @RequestBody RatingRequest req,
-                                 Authentication auth) {
+    public ResponseEntity<Void> put(@PathVariable Long id,
+                                    @RequestBody RatingRequest req,
+                                    Authentication auth) {
         if (auth == null) throw new UsuarioNaoAutenticadoException();
-        try {
-            service.avaliar(auth.getName(), id, req.valor());
-            return ResponseEntity.noContent().build();
-        } catch (AvaliacaoInvalidaException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+
+        // se não tinha nota, será criação → 201 + Location
+        boolean criando = (service.notaDoUsuario(auth.getName(), id) == null);
+
+        service.avaliar(auth.getName(), id, req.valor());
+
+        if (criando) {
+            URI location = URI.create("/api/v1/receitas/%d/avaliacoes/minha".formatted(id));
+            return ResponseEntity.created(location).build(); // 201 Created
         }
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
+
+
 
     /** DELETE sem sufixo: remove a nota do usuário. */
     @DeleteMapping
