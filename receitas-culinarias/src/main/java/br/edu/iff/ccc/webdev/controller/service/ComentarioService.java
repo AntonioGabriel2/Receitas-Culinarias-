@@ -3,6 +3,11 @@ package br.edu.iff.ccc.webdev.controller.service;
 import br.edu.iff.ccc.webdev.entities.Comentario;
 import br.edu.iff.ccc.webdev.entities.Receita;
 import br.edu.iff.ccc.webdev.entities.Usuario;
+import br.edu.iff.ccc.webdev.exception.ComentarioNaoEncontradoException;
+import br.edu.iff.ccc.webdev.exception.PermissaoNegadaException;
+import br.edu.iff.ccc.webdev.exception.ReceitaNaoEncontrada;
+import br.edu.iff.ccc.webdev.exception.TextoObrigatorioException;
+import br.edu.iff.ccc.webdev.exception.UsuarioNaoEncontrado;
 import br.edu.iff.ccc.webdev.repository.ComentarioRepository;
 import br.edu.iff.ccc.webdev.repository.ReceitaRepository;
 import br.edu.iff.ccc.webdev.repository.UsuarioRepository;
@@ -44,12 +49,12 @@ public class ComentarioService {
     @Transactional
     public Comentario criar(Long receitaId, String emailAutor, String texto) {
         Receita receita = receitaRepo.findById(receitaId)
-                .orElseThrow(() -> new IllegalArgumentException("Receita não encontrada."));
+                .orElseThrow(() -> new ReceitaNaoEncontrada(receitaId));
         Usuario autor = usuarioRepo.findByEmailIgnoreCase(emailAutor)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+                .orElseThrow(() -> new UsuarioNaoEncontrado(emailAutor));
 
         String t = texto == null ? "" : texto.trim();
-        if (t.isEmpty()) throw new IllegalArgumentException("Texto obrigatório.");
+        if (t.isEmpty()) throw new TextoObrigatorioException();
 
         Comentario c = new Comentario(receita, autor, t);
         return repo.save(c);
@@ -58,13 +63,13 @@ public class ComentarioService {
     @Transactional
     public void excluirSoft(Long comentarioId, String requesterEmail, boolean isAdmin) {
         Comentario c = repo.findById(comentarioId)
-                .orElseThrow(() -> new IllegalArgumentException("Comentário não encontrado."));
+                .orElseThrow(() -> new ComentarioNaoEncontradoException(comentarioId));
 
         if (c.isApagado()) return;
 
         boolean author = c.getAutor().getEmail().equalsIgnoreCase(requesterEmail);
         if (!isAdmin && !author) {
-            throw new IllegalArgumentException("Sem permissão para excluir este comentário.");
+            throw new PermissaoNegadaException("excluir este comentário");
         }
 
         Usuario apagador = usuarioRepo.findByEmailIgnoreCase(requesterEmail).orElse(null);

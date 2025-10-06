@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import br.edu.iff.ccc.webdev.controller.service.FavoritoService;
 import br.edu.iff.ccc.webdev.controller.service.ComentarioService;
-import br.edu.iff.ccc.webdev.entities.Comentario;
+import br.edu.iff.ccc.webdev.controller.service.AvaliacaoService;
+import br.edu.iff.ccc.webdev.entities.Ingrediente;
+
+import br.edu.iff.ccc.webdev.exception.*; // usar o pacote correto das suas exceptions
 
 @Controller
 @RequestMapping("receitas")
@@ -19,13 +22,14 @@ public class ReceitaController {
 
     private final ReceitaService service;
     private final FavoritoService favoritoService;
-       private final ComentarioService comentarioService;
+    private final ComentarioService comentarioService;
+    private final AvaliacaoService avaliacaoService;
 
-    // construtor
-    public ReceitaController(ReceitaService service, FavoritoService favoritoService, ComentarioService comentarioService) {
+    public ReceitaController(ReceitaService service, FavoritoService favoritoService, ComentarioService comentarioService, AvaliacaoService avaliacaoService) {
         this.service = service;
         this.favoritoService = favoritoService;
         this.comentarioService = comentarioService;
+        this.avaliacaoService = avaliacaoService;
     }
 
     private boolean isAdmin(org.springframework.security.core.Authentication auth) {
@@ -44,9 +48,9 @@ public class ReceitaController {
 
         java.util.Set<Long> favIds = java.util.Collections.emptySet();
         if (auth != null) {
-            favIds = favoritoService.idsReceitasFavoritasDoUsuario(auth.getName()); // e-mail do logado
+            favIds = favoritoService.idsReceitasFavoritasDoUsuario(auth.getName());
         }
-        model.addAttribute("favoritos", favIds); // Set<Long> com ids de receitas favoritas
+        model.addAttribute("favoritos", favIds);
         return "receitas";
     }
 
@@ -73,10 +77,10 @@ public class ReceitaController {
                 ra.addFlashAttribute("errorMessage", "É necessário estar logado.");
                 return "redirect:/login";
             }
-            service.criar(dto, auth.getName()); // passa o dono
+            service.criar(dto, auth.getName());
             ra.addFlashAttribute("successMessage", "Receita criada!");
             return "redirect:/receitas";
-        } catch (IllegalArgumentException e) {
+        } catch (TextoObrigatorioException e) {
             br.reject("erro.cadastro", e.getMessage());
             model.addAttribute("modo", "create");
             return "receita_form";
@@ -89,25 +93,31 @@ public class ReceitaController {
                         Model model,
                         RedirectAttributes ra,
                         org.springframework.security.core.Authentication auth) {
+        try {
+            Receita r = service.findById(id).orElseThrow(() -> new ReceitaNaoEncontrada(id));
+            model.addAttribute("receita", r);
 
-        var r = service.findById(id).orElse(null);
-        if (r == null) {
-            ra.addFlashAttribute("errorMessage", "Receita não encontrada.");
+            model.addAttribute("mediaNota", r.getRatingMedia());
+            model.addAttribute("qtdeNotas", r.getRatingCount());
+
+            Integer minhaNota = (auth != null)
+                    ? avaliacaoService.notaDoUsuario(auth.getName(), id)
+                    : null;
+            model.addAttribute("minhaNota", minhaNota);
+
+            boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            model.addAttribute("comentarios", comentarioService.listarPorReceita(id, isAdmin));
+
+            boolean favoritada = auth != null && auth.isAuthenticated()
+                    && favoritoService.isFavorita(auth.getName(), r.getId());
+            model.addAttribute("favoritada", favoritada);
+
+            return "receita_detalhes";
+        } catch (ReceitaNaoEncontrada e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/receitas";
         }
-        model.addAttribute("receita", r);
-
-        // ADMIN vê inclusive os apagados; outros só os não-apagados
-        boolean isAdmin = auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        model.addAttribute("comentarios", comentarioService.listarPorReceita(id, isAdmin));
-
-        // status de favorito do logado
-        boolean favoritada = auth != null && auth.isAuthenticated()
-                && favoritoService.isFavorita(auth.getName(), r.getId());
-        model.addAttribute("favoritada", favoritada);
-
-        return "receita_detalhes";
     }
 
     /* FORM EDITAR — ADMIN ou DONO */
@@ -120,22 +130,27 @@ public class ReceitaController {
             ra.addFlashAttribute("errorMessage", "Sem permissão para editar esta receita.");
             return "redirect:/receitas";
         }
-        Receita r = service.findById(id).orElse(null);
-        if (r == null) {
-            ra.addFlashAttribute("errorMessage", "Receita não encontrada.");
+        try {
+            Receita r = service.findById(id).orElseThrow(() -> new ReceitaNaoEncontrada(id));
+
+            ReceitaDTO dto = new ReceitaDTO();
+            dto.setId(r.getId());
+            dto.setNome(r.getNome());
+            dto.setModoPreparo(r.getModoPreparo());
+
+            String ingredientesTexto = r.getIngredientes().stream()
+                    .map(Ingrediente::getNome)
+                    .collect(java.util.stream.Collectors.joining("\n"));
+            dto.setIngredientes(ingredientesTexto);
+
+            model.addAttribute("receita", dto);
+            model.addAttribute("modo", "edit");
+            model.addAttribute("id", id);
+            return "receita_form";
+        } catch (ReceitaNaoEncontrada e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/receitas";
         }
-
-        ReceitaDTO dto = new ReceitaDTO();
-        dto.setId(r.getId());
-        dto.setNome(r.getNome());
-        dto.setIngredientes(r.getIngredientes());
-        dto.setModoPreparo(r.getModoPreparo());
-
-        model.addAttribute("receita", dto);
-        model.addAttribute("modo", "edit");
-        model.addAttribute("id", id);
-        return "receita_form";
     }
 
     /* ATUALIZAR — ADMIN ou DONO */
@@ -158,7 +173,7 @@ public class ReceitaController {
             service.atualizar(id, dto);
             ra.addFlashAttribute("successMessage", "Receita atualizada!");
             return "redirect:/receitas";
-        } catch (IllegalArgumentException e) {
+        } catch (ReceitaNaoEncontrada | TextoObrigatorioException e) {
             br.reject("erro.atualizar", e.getMessage());
             model.addAttribute("modo", "edit");
             model.addAttribute("id", id);
@@ -178,7 +193,7 @@ public class ReceitaController {
         try {
             service.excluir(id);
             ra.addFlashAttribute("successMessage", "Receita excluída!");
-        } catch (IllegalArgumentException e) {
+        } catch (ReceitaNaoEncontrada e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/receitas";

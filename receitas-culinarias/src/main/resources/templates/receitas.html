@@ -56,8 +56,13 @@
         <tr th:each="r : ${receitas}">
           <td th:text="${r.id}">1</td>
           <td th:text="${r.nome}">Nome</td>
-          <td><div th:text="${r.ingredientes}">-</div></td>
+
+          <!-- Agora é uma lista: mostra a contagem -->
+          <td th:text="${#lists.size(r.ingredientes)} + ' itens'">0 itens</td>
+
+          <!-- Modo de preparo (pode ser grande; mantenha simples) -->
           <td><div th:text="${r.modoPreparo}">-</div></td>
+
           <td class="actions">
             <a th:href="@{|/receitas/${r.id}|}" class="btn">Detalhes &amp; comentários</a>
 

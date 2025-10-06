@@ -3,6 +3,8 @@ package br.edu.iff.ccc.webdev.controller.restapi;
 import br.edu.iff.ccc.webdev.controller.service.ReceitaService;
 import br.edu.iff.ccc.webdev.dto.ReceitaDTO;
 import br.edu.iff.ccc.webdev.entities.Receita;
+import br.edu.iff.ccc.webdev.exception.ReceitaNaoEncontrada;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +37,7 @@ public class ReceitaApiController {
     public ResponseEntity<?> detalhes(@PathVariable Long id) {
         return service.findById(id)
                 .<ResponseEntity<?>>map(r -> ResponseEntity.ok(ReceitaDetailView.of(r)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Receita não encontrada."));
+                .orElseThrow(() -> new ReceitaNaoEncontrada(id));
     }
 
     /* ========== POST/PUT/DELETE (exigem permissão) ========== */
@@ -115,9 +116,22 @@ public class ReceitaApiController {
         static ReceitaListView of(Receita r) { return new ReceitaListView(r.getId(), r.getNome()); }
     }
 
-    public record ReceitaDetailView(Long id, String nome, String ingredientes, String modoPreparo) {
+    // dentro de ReceitaApiController
+
+    public record ReceitaDetailView(
+            Long id,
+            String nome,
+            List<ItemIngrediente> ingredientes,
+            String modoPreparo
+    ) {
         static ReceitaDetailView of(Receita r) {
-            return new ReceitaDetailView(r.getId(), r.getNome(), r.getIngredientes(), r.getModoPreparo());
+            var itens = r.getIngredientes().stream()
+                    .map(i -> new ItemIngrediente(i.getNome(), i.getQuantidade()))
+                    .toList();
+            return new ReceitaDetailView(r.getId(), r.getNome(), itens, r.getModoPreparo());
         }
+
+        public record ItemIngrediente(String nome, String quantidade) {}
     }
+
 }
